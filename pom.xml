@@ -148,6 +148,8 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>iwork4se-backend</finalName>
 	</build>
+
 
 </project>
