@@ -1,0 +1,16 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: iwork4se
+  profiles:
+    active: @spring.profiles.active@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+logging:
+  level:
+    web: info
+    root: info
