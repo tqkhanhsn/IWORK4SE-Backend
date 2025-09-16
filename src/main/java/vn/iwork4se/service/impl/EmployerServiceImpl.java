@@ -2,14 +2,20 @@ package vn.iwork4se.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerCreationResponse;
+import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
@@ -18,7 +24,10 @@ import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.EmployerService;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -113,8 +122,66 @@ public class EmployerServiceImpl implements EmployerService {
                 .build();
     }
 
+    @Override
+    public EmployerPageResponse findAllEmployers(String keyword, String sort, int page, int size) {
+        Sort.Order order = new Sort.Order(Sort.Direction.ASC, "id");
+        if (StringUtils.hasLength(sort)) {
+            Pattern pattern = Pattern.compile("^(\\w+)(:)(asc|desc)$");
+            Matcher matcher = pattern.matcher(sort);
+            if (matcher.find()) {
+                String column = matcher.group(1);
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    order = new Sort.Order(Sort.Direction.ASC, column);
+                } else {
+                    order = new Sort.Order(Sort.Direction.DESC, column);
+                }
+            }
+        }
+
+        int pageNo = 0;
+        if (page > 0) {
+            pageNo = page - 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNo, size, Sort.by(order));
+        Page<Employer> employerEntities = null;
+        if (StringUtils.hasLength(keyword)) {
+            employerEntities = employerRepository.searchByKeywords(keyword, pageable);
+        } else {
+            employerEntities = employerRepository.findAll(pageable);
+        }
+
+        return getEmployerPageResponse(page, size, employerEntities);
+    }
+
     private Employer getEmployerById(String id) {
         return employerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
+    }
+    private static EmployerPageResponse getEmployerPageResponse(int page, int size, Page<Employer> employerEntities) {
+        List<EmployerResponse> employerList = employerEntities.stream().map(
+                employerEntity -> EmployerResponse.builder()
+                        .firstName(employerEntity.getFirstName())
+                        .lastName(employerEntity.getLastName())
+                        .gender(employerEntity.getGender())
+                        .birthday(employerEntity.getBirthday())
+                        .email(employerEntity.getEmail())
+                        .phone(employerEntity.getPhone())
+                        .address(employerEntity.getAddress())
+                        .companyName(employerEntity.getCompanyName())
+                        .location(employerEntity.getLocation())
+                        .industry(employerEntity.getIndustry())
+                        .description(employerEntity.getDescription())
+                        .logoUrl(employerEntity.getLogoUrl())
+                        .build()
+        ).toList();
+
+        EmployerPageResponse employerPageResponse = new EmployerPageResponse();
+        employerPageResponse.setPageNumber(page);
+        employerPageResponse.setPageSize(size);
+        employerPageResponse.setTotalPages(employerEntities.getTotalPages());
+        employerPageResponse.setTotalElements(employerEntities.getTotalElements());
+        employerPageResponse.setEmployers(employerList);
+        return employerPageResponse;
     }
 }

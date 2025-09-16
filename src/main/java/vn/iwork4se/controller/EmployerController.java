@@ -73,4 +73,19 @@ public class EmployerController {
         result.put("data", empDetail);
         return result;
     }
+
+    @Operation(summary = "get list of employers", description = "API to get list of employers")
+    @GetMapping("/list")
+    public Map<String, Object> getApplicant(@RequestParam (required = false) String keyword,
+                                            @RequestParam (required = false) String sort,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size) {
+        log.info("Getting list of users");
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "List of users has been successfully retrieved");
+        result.put("data", employerService.findAllEmployers(keyword, sort, page, size));
+        return result;
+    }
 }
