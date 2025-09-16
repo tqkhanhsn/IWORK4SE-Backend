@@ -4,6 +4,7 @@ import lombok.*;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
@@ -11,23 +12,11 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApplicantCreationResponse {
+public class ApplicantCreationResponse implements Serializable {
     private String id;
     private String firstName;
     private String lastName;
     private String email;
     private String userName;
-//    private String address;
-//    private LocalDate birthday;
-//    private String phone;
-//    private Gender gender;
-//    private UserStatus userStatus;
-//    private LocalDate createAt;
-//    private String message;
-//
-//    private Integer yearsOfExperience;
-//    private String careerObjective;
-//    private String universityName;
-//    private Double gpa;
-//    private String major;
+
 }

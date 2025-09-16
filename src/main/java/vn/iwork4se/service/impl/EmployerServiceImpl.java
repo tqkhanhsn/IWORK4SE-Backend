@@ -6,7 +6,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.EmployerCreationRequest;
+import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerCreationResponse;
+import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
@@ -25,6 +27,7 @@ public class EmployerServiceImpl implements EmployerService {
 
     @Override
     public EmployerCreationResponse save(EmployerCreationRequest req) {
+        log.info("Creat user with request: {}", req);
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -40,6 +43,7 @@ public class EmployerServiceImpl implements EmployerService {
         employer.setEmail(req.getEmail());
         employer.setUserName(req.getUserName());
         employer.setPassword(passwordEncoder.encode(req.getPassword()));
+        employer.setCreateAt(LocalDate.now());
 
 
         Employer savedEmployer = employerRepository.save(employer);
@@ -51,5 +55,30 @@ public class EmployerServiceImpl implements EmployerService {
                 .email(savedEmployer.getEmail())
                 .userName(savedEmployer.getUserName())
                 .build();
+    }
+
+    @Override
+    public void updateEmployer(EmployerUpdateRequest req) {
+        log.info("Update employer with request: {}", req);
+        Employer employer = getEmployerById(req.getId());
+        employer.setFirstName(req.getFirstName());
+        employer.setLastName(req.getLastName());
+        employer.setAddress(req.getAddress());
+        employer.setBirthday(req.getBirthday());
+        employer.setPhone(req.getPhone());
+        employer.setGender(req.getGender());
+        employer.setUpdateAt(LocalDate.now());
+        employer.setCompanyName(req.getCompanyName());
+        employer.setLocation(req.getLocation());
+        employer.setIndustry(req.getIndustry());
+        employer.setDescription(req.getDescription());
+        employer.setLogoUrl(req.getLogoUrl());
+        employerRepository.save(employer);
+
+    }
+
+    private Employer getEmployerById(String id) {
+        return employerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
     }
 }

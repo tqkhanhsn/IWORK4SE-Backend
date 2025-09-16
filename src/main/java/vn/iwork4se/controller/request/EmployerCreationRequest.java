@@ -7,12 +7,13 @@ import lombok.Setter;
 import lombok.ToString;
 import vn.iwork4se.common.Gender;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @ToString
-public class EmployerCreationRequest {
+public class EmployerCreationRequest implements Serializable {
     @NotBlank(message = "First name is required")
     private String firstName;
 

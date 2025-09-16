@@ -6,11 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.iwork4se.controller.request.ApplicantCreationRequest;
+import vn.iwork4se.controller.request.ApplicantUpdateRequest;
 import vn.iwork4se.service.ApplicantService;
 
 import java.util.LinkedHashMap;
@@ -36,4 +34,17 @@ public class ApplicantController {
 
     }
 
+    @Operation(summary = "Update an applicant", description = "API to update an existing applicant in the system")
+    @PutMapping("/update")
+    public Map<String, Object> updateApplicant(@RequestBody ApplicantUpdateRequest request) {
+        log.info("Updating applicant with request: {}", request);
+        applicantService.updateApplicant(request);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.ACCEPTED.value());
+        result.put("message", "User has been successfully updated");
+        result.put("data", "");
+        return result;
+    }
 }
+
+

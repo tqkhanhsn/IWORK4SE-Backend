@@ -32,10 +32,8 @@ public class Applicant extends User {
     @Column(name = "skill")
     private Set<String> skills = new HashSet<>();
 
-    @ElementCollection
-    @CollectionTable(name = "tbl_applicant_certificate", joinColumns = @JoinColumn(name = "applicant_id"))
-    @Column(name = "certificate")
-    private Set<String> certificate = new HashSet<>();
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Certificate> certificates = new HashSet<>();
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
     private Set<Application> applications = new HashSet<>();
