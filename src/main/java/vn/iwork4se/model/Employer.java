@@ -14,7 +14,7 @@ import java.util.Set;
 @AllArgsConstructor
 @PrimaryKeyJoinColumn(name = "user_id")
 public class Employer extends User{
-    @Column(name = "company_name", nullable = false)
+    @Column(name = "company_name")
     private String companyName;
 
     private String location;

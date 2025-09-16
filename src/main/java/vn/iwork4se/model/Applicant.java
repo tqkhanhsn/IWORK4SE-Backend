@@ -28,12 +28,12 @@ public class Applicant extends User {
     private String major;
 
     @ElementCollection
-    @CollectionTable(name = "applicant_skills", joinColumns = @JoinColumn(name = "applicant_id"))
+    @CollectionTable(name = "tbl_applicant_skill", joinColumns = @JoinColumn(name = "applicant_id"))
     @Column(name = "skill")
     private Set<String> skills = new HashSet<>();
 
     @ElementCollection
-    @CollectionTable(name = "applicant_certificates", joinColumns = @JoinColumn(name = "applicant_id"))
+    @CollectionTable(name = "tbl_applicant_certificate", joinColumns = @JoinColumn(name = "applicant_id"))
     @Column(name = "certificate")
     private Set<String> certificate = new HashSet<>();
 

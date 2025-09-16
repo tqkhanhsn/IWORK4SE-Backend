@@ -61,10 +61,10 @@ public class User {
     private UserStatus userStatus;
 
     @Column(name = "create_at")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
 
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDate updateAt;
 
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
