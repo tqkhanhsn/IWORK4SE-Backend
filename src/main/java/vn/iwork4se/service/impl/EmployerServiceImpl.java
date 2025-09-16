@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.iwork4se.common.UserStatus;
+import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerCreationResponse;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class EmployerServiceImpl implements EmployerService {
+
     private final EmployerRepository employerRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -75,6 +77,17 @@ public class EmployerServiceImpl implements EmployerService {
         employer.setLogoUrl(req.getLogoUrl());
         employerRepository.save(employer);
 
+    }
+
+    @Override
+    public void changePasswordEmployer(ChangePasswordRequest req) {
+        log.info("Changing password for user with request: {}", req);
+        Employer employer = getEmployerById(req.getId());
+        if(req.getPassword().equals(req.getConfirmPassword())) {
+            employer.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+        employerRepository.save(employer);
+        log.info("Change password user: {}", employer);
     }
 
     private Employer getEmployerById(String id) {

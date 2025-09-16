@@ -7,6 +7,7 @@ import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
+import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.response.ApplicantCreationResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class ApplicantServiceImpl implements ApplicantService {
+
     private final ApplicantRepository applicantRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -114,6 +116,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantRepository.save(applicant);
         log.info("Updated applicant: {}", applicant);
 
+
+    }
+
+    @Override
+    public void changePasswordApplicant(ChangePasswordRequest req) {
+        log.info("Changing password for user with request: {}", req);
+        Applicant applicant = getApplicantById(req.getId());
+        if(req.getPassword().equals(req.getConfirmPassword())) {
+            applicant.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+        applicantRepository.save(applicant);
+        log.info("Change password user: {}", applicant);
 
     }
 

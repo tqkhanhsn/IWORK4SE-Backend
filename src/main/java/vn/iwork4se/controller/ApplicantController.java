@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
+import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.service.ApplicantService;
 
 import java.util.LinkedHashMap;
@@ -42,6 +43,18 @@ public class ApplicantController {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.ACCEPTED.value());
         result.put("message", "User has been successfully updated");
+        result.put("data", "");
+        return result;
+    }
+
+    @Operation(summary = "Change user password", description = "API to change user password")
+    @PatchMapping("/change-pwd")
+    public Map<String, Object> changePassword(@RequestBody ChangePasswordRequest request) {
+        log.info("Changing password for user with request: {}", request);
+        applicantService.changePasswordApplicant(request);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.NO_CONTENT.value());
+        result.put("message", "User password has been successfully changed");
         result.put("data", "");
         return result;
     }
