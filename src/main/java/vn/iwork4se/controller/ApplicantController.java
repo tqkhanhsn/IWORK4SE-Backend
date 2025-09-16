@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
+import vn.iwork4se.controller.response.ApplicantResponse;
+import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.service.ApplicantService;
 
 import java.util.LinkedHashMap;
@@ -56,6 +58,19 @@ public class ApplicantController {
         result.put("status", HttpStatus.NO_CONTENT.value());
         result.put("message", "User password has been successfully changed");
         result.put("data", "");
+        return result;
+    }
+
+    @Operation(summary = "Get applicant detail", description = "API to get user detail by ID")
+    @GetMapping("/{id}")
+    public Map<String, Object> getUserDetail(@PathVariable String id) {
+        log.info("Getting employer detail for user ID: {}", id);
+        ApplicantResponse appDetail =  applicantService.findApplicantById(id);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "User detail has been successfully retrieved");
+        result.put("data", appDetail);
         return result;
     }
 }

@@ -7,8 +7,11 @@ import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
+import vn.iwork4se.controller.request.CertificateRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.response.ApplicantCreationResponse;
+import vn.iwork4se.controller.response.ApplicantResponse;
+import vn.iwork4se.controller.response.CertificateResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
 import vn.iwork4se.model.Certificate;
@@ -53,6 +56,7 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicant.setUserName(req.getUserName());
         applicant.setPassword(passwordEncoder.encode(req.getPassword()));
         applicant.setCreateAt(LocalDate.now());
+        applicant.setUserStatus(UserStatus.INACTIVE);
 
         Applicant savedApplicant = applicantRepository.save(applicant);
 
@@ -128,6 +132,41 @@ public class ApplicantServiceImpl implements ApplicantService {
         }
         applicantRepository.save(applicant);
         log.info("Change password user: {}", applicant);
+
+    }
+
+    @Override
+    public ApplicantResponse findApplicantById(String id) {
+        log.info("Get employer detail by id: {}", id);
+        Applicant applicant = getApplicantById(id);
+        return ApplicantResponse.builder()
+                .firstName(applicant.getFirstName())
+                .lastName(applicant.getLastName())
+                .email(applicant.getEmail())
+                .address(applicant.getAddress())
+                .birthday(applicant.getBirthday())
+                .phone(applicant.getPhone())
+                .gender(applicant.getGender())
+                .yearsOfExperience(applicant.getYearsOfExperience())
+                .careerObjective(applicant.getCareerObjective())
+                .universityName(applicant.getUniversityName())
+                .gpa(applicant.getGpa())
+                .major(applicant.getMajor())
+                .certificates(applicant.getCertificates().stream().map(cert -> CertificateResponse.builder()
+                        .certificateName(cert.getCertificateName())
+                        .issuingOrganization(cert.getIssuingOrganization())
+                        .issueDate(cert.getIssueDate())
+                        .expirationDate(cert.getExpirationDate())
+                        .certificateId(cert.getCertificateId())
+                        .certificateUrl(cert.getCertificateUrl())
+                        .notes(cert.getNotes())
+                        .build()).collect(Collectors.toList()))
+                .Skills(new ArrayList<>(applicant.getSkills()))
+                .build();
+
+
+
+
 
     }
 

@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerCreationResponse;
+import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
@@ -45,6 +47,7 @@ public class EmployerServiceImpl implements EmployerService {
         employer.setEmail(req.getEmail());
         employer.setUserName(req.getUserName());
         employer.setPassword(passwordEncoder.encode(req.getPassword()));
+        employer.setUserStatus(UserStatus.INACTIVE);
         employer.setCreateAt(LocalDate.now());
 
 
@@ -88,6 +91,26 @@ public class EmployerServiceImpl implements EmployerService {
         }
         employerRepository.save(employer);
         log.info("Change password user: {}", employer);
+    }
+
+    @Override
+    public EmployerResponse findEmployerById(String id) {
+        log.info("Get employer detail by id: {}", id);
+        Employer employer = getEmployerById(id);
+        return EmployerResponse.builder()
+                .firstName(employer.getFirstName())
+                .lastName(employer.getLastName())
+                .email(employer.getEmail())
+                .address(employer.getAddress())
+                .birthday(employer.getBirthday())
+                .phone(employer.getPhone())
+                .gender(employer.getGender())
+                .companyName(employer.getCompanyName())
+                .location(employer.getLocation())
+                .industry(employer.getIndustry())
+                .description(employer.getDescription())
+                .logoUrl(employer.getLogoUrl())
+                .build();
     }
 
     private Employer getEmployerById(String id) {

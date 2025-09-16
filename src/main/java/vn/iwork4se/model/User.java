@@ -51,12 +51,10 @@ public class User {
 
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "gender", length = 255)
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "user_status", length = 255)
     private UserStatus userStatus;
 

@@ -11,6 +11,7 @@ import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
+import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.service.ApplicantService;
 import vn.iwork4se.service.EmployerService;
 
@@ -57,6 +58,19 @@ public class EmployerController {
         result.put("status", HttpStatus.NO_CONTENT.value());
         result.put("message", "User password has been successfully changed");
         result.put("data", "");
+        return result;
+    }
+
+    @Operation(summary = "Get employer detail", description = "API to get user detail by ID")
+    @GetMapping("/{id}")
+    public Map<String, Object> getUserDetail(@PathVariable String id) {
+        log.info("Getting employer detail for user ID: {}", id);
+        EmployerResponse empDetail =  employerService.findEmployerById(id);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "User detail has been successfully retrieved");
+        result.put("data", empDetail);
         return result;
     }
 }

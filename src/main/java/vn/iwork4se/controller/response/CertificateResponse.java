@@ -1,18 +1,17 @@
-package vn.iwork4se.controller.request;
+package vn.iwork4se.controller.response;
 
-import jakarta.persistence.Column;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
 @Setter
-@ToString
-public class CertificateRequest implements Serializable {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CertificateResponse implements Serializable {
     private String certificateName;
     private String issuingOrganization;
     private LocalDate issueDate;
@@ -20,5 +19,4 @@ public class CertificateRequest implements Serializable {
     private String certificateId;
     private String certificateUrl;
     private String notes;
-
 }
