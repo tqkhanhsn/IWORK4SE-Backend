@@ -1,5 +1,8 @@
 server:
   port: 8080
+  error:
+    include-stacktrace: never
+    include-message: always
 spring:
   application:
     name: iwork4se
