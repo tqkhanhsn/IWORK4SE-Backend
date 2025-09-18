@@ -18,6 +18,7 @@ import vn.iwork4se.controller.response.EmployerCreationResponse;
 import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
+import vn.iwork4se.model.Applicant;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
@@ -152,6 +153,15 @@ public class EmployerServiceImpl implements EmployerService {
         }
 
         return getEmployerPageResponse(page, size, employerEntities);
+    }
+
+    @Override
+    public void deleteEmployerById(String id) {
+        log.info("Deleting employer with id: {}", id);
+        Employer employer = getEmployerById(id);
+        employer.setUserStatus(UserStatus.DELETED);
+        userRepository.save(employer);
+        log.info("Deleted user: {}", employer);
     }
 
     private Employer getEmployerById(String id) {

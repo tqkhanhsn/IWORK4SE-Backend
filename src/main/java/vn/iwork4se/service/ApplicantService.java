@@ -15,4 +15,5 @@ public interface ApplicantService {
     void changePasswordApplicant(ChangePasswordRequest req);
     ApplicantResponse findApplicantById(String id);
     ApplicantPageResponse findAllApplicants(String keyword, String sort, int page, int size);
+    void deleteApplicantById(String id);
 }

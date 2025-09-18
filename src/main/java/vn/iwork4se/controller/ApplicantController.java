@@ -88,6 +88,18 @@ public class ApplicantController {
         result.put("data", applicantService.findAllApplicants(keyword, sort, page, size));
         return result;
     }
+
+    @Operation(summary = "Delete applicant", description = "API to delete a applicant by ID")
+    @DeleteMapping("/del/{id}")
+    public Map<String, Object> deleteApplicant(@PathVariable String id) {
+        log.info("Deleting user with ID: {}", id);
+        applicantService.deleteApplicantById(id);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.RESET_CONTENT.value());
+        result.put("message", "Applicant has been successfully deleted");
+        result.put("data", "");
+        return result;
+    }
 }
 
 

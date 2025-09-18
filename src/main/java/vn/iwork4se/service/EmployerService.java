@@ -18,5 +18,5 @@ public interface EmployerService {
     void changePasswordEmployer(ChangePasswordRequest req);
     EmployerResponse findEmployerById(String id);
     EmployerPageResponse findAllEmployers(String keyword, String sort, int page, int size);
-
+    void deleteEmployerById(String id);
 }

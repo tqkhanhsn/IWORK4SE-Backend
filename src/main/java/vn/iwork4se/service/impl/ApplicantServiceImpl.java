@@ -211,6 +211,15 @@ public class ApplicantServiceImpl implements ApplicantService {
         return getApplicantPageResponse(page, size, applicantEntities);
     }
 
+    @Override
+    public void deleteApplicantById(String id) {
+        log.info("Deleting applicant with id: {}", id);
+        Applicant applicant = getApplicantById(id);
+        applicant.setUserStatus(UserStatus.DELETED);
+        userRepository.save(applicant);
+        log.info("Deleted user: {}", applicant);
+    }
+
     private Applicant getApplicantById(String id) {
         return applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));

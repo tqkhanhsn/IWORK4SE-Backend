@@ -88,4 +88,15 @@ public class EmployerController {
         result.put("data", employerService.findAllEmployers(keyword, sort, page, size));
         return result;
     }
+    @Operation(summary = "Delete employer", description = "API to delete a employer by ID")
+    @DeleteMapping("/del/{id}")
+    public Map<String, Object> deleteEmployer(@PathVariable String id) {
+        log.info("Deleting user with ID: {}", id);
+        employerService.deleteEmployerById(id);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.RESET_CONTENT.value());
+        result.put("message", "Employer has been successfully deleted");
+        result.put("data", "");
+        return result;
+    }
 }
