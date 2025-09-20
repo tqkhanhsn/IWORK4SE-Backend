@@ -8,24 +8,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
-import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
-import vn.iwork4se.controller.request.CertificateRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.response.*;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
 import vn.iwork4se.model.Certificate;
-import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.ApplicantRepository;
 import vn.iwork4se.repository.CertificateRepository;
-import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.ApplicantService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import vn.iwork4se.service.EmailService;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,38 +40,8 @@ public class ApplicantServiceImpl implements ApplicantService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CertificateRepository certificateRepository;
-    private final EmployerRepository employerRepository;
+    private final EmailService emailService;
 
-    @Override
-    public ApplicantCreationResponse save(ApplicantCreationRequest req) {
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        if (userRepository.existsByUserName(req.getUserName())) {
-            throw new RuntimeException("Username already exists");
-        }
-
-        Applicant applicant = new Applicant();
-        applicant.setId("APP"+UUID.randomUUID().toString());
-        applicant.setFirstName(req.getFirstName());
-        applicant.setLastName(req.getLastName());
-        applicant.setEmail(req.getEmail());
-        applicant.setUserName(req.getUserName());
-        applicant.setPassword(passwordEncoder.encode(req.getPassword()));
-        applicant.setCreateAt(LocalDate.now());
-        applicant.setUserStatus(UserStatus.INACTIVE);
-
-        Applicant savedApplicant = applicantRepository.save(applicant);
-
-        return ApplicantCreationResponse.builder()
-                .id(savedApplicant.getId())
-                .firstName(savedApplicant.getFirstName())
-                .lastName(savedApplicant.getLastName())
-                .email(savedApplicant.getEmail())
-                .userName(savedApplicant.getUserName())
-                .build();
-    }
 
     @Override
     public void updateApplicant(ApplicantUpdateRequest req) {
