@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.UserCreationRequest;
 import vn.iwork4se.controller.response.UserCreationResponse;
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public UserCreationResponse createUser(UserCreationRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -59,7 +61,7 @@ public class UserServiceImpl implements UserService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
-                .userName(user.getUserName())
+                .userName(user.getUsername())
                 .build();
     }
 }

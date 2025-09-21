@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
@@ -44,6 +45,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateApplicant(ApplicantUpdateRequest req) {
         log.info("Update Applicant with request: {}", req);
 

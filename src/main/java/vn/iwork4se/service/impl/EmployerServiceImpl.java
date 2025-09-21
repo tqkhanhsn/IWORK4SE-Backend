@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
@@ -40,6 +41,7 @@ public class EmployerServiceImpl implements EmployerService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateEmployer(EmployerUpdateRequest req) {
         log.info("Update employer with request: {}", req);
         Employer employer = getEmployerById(req.getId());
