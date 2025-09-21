@@ -1,4 +1,3 @@
-
 spring:
   config:
     activate:
@@ -17,6 +16,11 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: update
+  sendGrid:
+    apiKey: "${SENDGRID_API_KEY}"
+    fromEmail: 21096301.khanh@student.iuh.edu.vn
+    templateId: d-81068bbbc6324cb08b5543a41810e867
+    verificationLink: http://localhost:8080/user/confirm-email
 # application-dev.yml
 springdoc:
   api-docs:
@@ -29,3 +33,8 @@ openapi:
     server: http://localhost:${server.port}
     title: Iwork4se backend service
     version: 1.0.0
+jwt:
+  expiryMinutes: 30
+  expiryDays: 7
+  accessKey: "RCq2QWKOBB4vrCNdmlqYhfqpUK5SQeVNPOBZqX+awgE="
+  refreshKey: "/OzKyt0P8FdZY995196f/QLB7aT2Ts8uSUvixqVjWKs="
