@@ -47,5 +47,8 @@ public class JobPostCreationRequest implements Serializable {
         // employer id
         @NotBlank(message = "employerId must not be blank")
         private String employerId;
+        
+        // category id (optional) 
+        private String categoryId;
     }
 
