@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import vn.iwork4se.common.UserType;
 import vn.iwork4se.service.UserService;
 
 import java.io.Serializable;
@@ -28,4 +29,5 @@ public class UserCreationRequest implements Serializable {
 
     @NotBlank(message = "Password is required")
     private String password;
+    private UserType userType ;
 }

@@ -2,6 +2,7 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +29,7 @@ public class Message {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @CreationTimestamp
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
 

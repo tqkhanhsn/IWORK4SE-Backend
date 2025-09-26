@@ -9,7 +9,9 @@ public class ChangePasswordRequest {
     @NotNull
     private String id;
     @NotBlank(message = "Password is mandatory")
-    private String password;
+    private String oldPassword;
+    @NotBlank(message = "Password is mandatory")
+    private String newPassword;
     @NotBlank(message = "Password is mandatory")
     private String confirmPassword;
 }

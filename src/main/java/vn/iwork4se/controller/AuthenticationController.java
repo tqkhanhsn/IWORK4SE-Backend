@@ -4,6 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.iwork4se.controller.request.SignInRequest;
 import vn.iwork4se.controller.response.TokenResponse;
 import vn.iwork4se.service.AuthenticationService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -21,8 +29,9 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
+
     @Operation(summary = "Access token", description = "API to get access token")
-    @PostMapping("/access-token")
+    @PostMapping("/login")
     public TokenResponse getAccessToken(@RequestBody SignInRequest request) {
         log.info("Getting access token");
         return authenticationService.getAccessToken(request);

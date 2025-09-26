@@ -4,9 +4,11 @@ import org.springframework.security.core.GrantedAuthority;
 import vn.iwork4se.common.TokenType;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface JwtService {
-    String generateAccessToken(String userId, String userName, Collection<? extends GrantedAuthority> authorities);
-    String generateRefreshToken(String userId, String userName, Collection<? extends GrantedAuthority> authorities);
+    String generateAccessToken(String username, List<String> authorities);
+
+    String generateRefreshToken(String username, List<String> authorities);
     String extractUsername(String token, TokenType type);
 }

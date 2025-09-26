@@ -23,7 +23,7 @@ import vn.iwork4se.service.EmailService;
 import vn.iwork4se.service.EmployerService;
 
 import java.io.IOException;
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -51,7 +51,6 @@ public class EmployerServiceImpl implements EmployerService {
         employer.setBirthday(req.getBirthday());
         employer.setPhone(req.getPhone());
         employer.setGender(req.getGender());
-        employer.setUpdateAt(LocalDate.now());
         employer.setCompanyName(req.getCompanyName());
         employer.setLocation(req.getLocation());
         employer.setIndustry(req.getIndustry());
@@ -61,16 +60,8 @@ public class EmployerServiceImpl implements EmployerService {
 
     }
 
-    @Override
-    public void changePasswordEmployer(ChangePasswordRequest req) {
-        log.info("Changing password for user with request: {}", req);
-        Employer employer = getEmployerById(req.getId());
-        if(req.getPassword().equals(req.getConfirmPassword())) {
-            employer.setPassword(passwordEncoder.encode(req.getPassword()));
-        }
-        employerRepository.save(employer);
-        log.info("Change password user: {}", employer);
-    }
+
+
 
     @Override
     public EmployerResponse findEmployerById(String id) {

@@ -99,17 +99,7 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     }
 
-    @Override
-    public void changePasswordApplicant(ChangePasswordRequest req) {
-        log.info("Changing password for user with request: {}", req);
-        Applicant applicant = getApplicantById(req.getId());
-        if(req.getPassword().equals(req.getConfirmPassword())) {
-            applicant.setPassword(passwordEncoder.encode(req.getPassword()));
-        }
-        applicantRepository.save(applicant);
-        log.info("Change password user: {}", applicant);
 
-    }
 
     @Override
     public ApplicantResponse findApplicantById(String id) {

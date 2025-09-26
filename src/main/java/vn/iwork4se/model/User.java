@@ -6,12 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
+import vn.iwork4se.common.UserType;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -62,9 +66,15 @@ public class User implements UserDetails, Serializable {
     @Column(name = "user_status", length = 255)
     private UserStatus userStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", length = 255)
+    private UserType userType;
+
+    @CreationTimestamp
     @Column(name = "create_at")
     private LocalDate createAt;
 
+    @UpdateTimestamp
     @Column(name = "update_at")
     private LocalDate updateAt;
 
@@ -78,14 +88,15 @@ public class User implements UserDetails, Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Notification> notifications = new HashSet<>();
 
-    @OneToOne
-    @JoinColumn(name = "role_id")
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        String roleName = role != null ? role.getName() : "APPLICANT";
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
 
     @Override

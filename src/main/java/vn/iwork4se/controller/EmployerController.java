@@ -3,10 +3,13 @@ package vn.iwork4se.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
@@ -22,14 +25,14 @@ import java.util.Map;
 @Tag(name="Employer controller")
 @Slf4j(topic = "EmployerController")
 @RequiredArgsConstructor
-//@Validated
+@Validated
 public class EmployerController {
     private final EmployerService employerService;
 
 
     @Operation(summary = "Update employer", description = "API to update employer in the system")
     @PutMapping("/update")
-    public Map<String, Object> updateEmp(@RequestBody EmployerUpdateRequest request) {
+    public Map<String, Object> updateEmp(@RequestBody @Valid EmployerUpdateRequest request) {
         log.info("Updating employer with request: {}", request);
         employerService.updateEmployer(request);
         Map<String, Object> result = new LinkedHashMap<>();
@@ -39,17 +42,6 @@ public class EmployerController {
         return result;
     }
 
-    @Operation(summary = "Change user password", description = "API to change user password")
-    @PatchMapping("/change-pwd")
-    public Map<String, Object> changePassword(@RequestBody ChangePasswordRequest request) {
-        log.info("Changing password for user with request: {}", request);
-        employerService.changePasswordEmployer(request);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("status", HttpStatus.NO_CONTENT.value());
-        result.put("message", "User password has been successfully changed");
-        result.put("data", "");
-        return result;
-    }
 
     @Operation(summary = "Get employer detail", description = "API to get user detail by ID")
     @GetMapping("/{id}")

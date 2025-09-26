@@ -7,7 +7,6 @@ import vn.iwork4se.controller.response.EmployerResponse;
 
 public interface EmployerService {
     void updateEmployer(EmployerUpdateRequest req);
-    void changePasswordEmployer(ChangePasswordRequest req);
     EmployerResponse findEmployerById(String id);
     EmployerPageResponse findAllEmployers(String keyword, String sort, int page, int size);
     void deleteEmployerById(String id);

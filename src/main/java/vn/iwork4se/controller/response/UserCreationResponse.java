@@ -1,6 +1,7 @@
 package vn.iwork4se.controller.response;
 
 import lombok.*;
+import vn.iwork4se.common.UserType;
 
 import java.io.Serializable;
 
@@ -15,5 +16,6 @@ public class UserCreationResponse implements Serializable {
     private String lastName;
     private String email;
     private String userName;
+    private UserType userType;
 
 }

@@ -5,9 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tbl_role")
@@ -26,18 +32,20 @@ public class Role {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @CreationTimestamp
     @Column(name = "create_at")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
 
+    @UpdateTimestamp
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDate updateAt;
 
 
-    @OneToOne(mappedBy = "role")
-    private User user;
+    @OneToMany(mappedBy = "role")
+    private Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    private List<RoleHasPermission> rolePermissions;
+    private Set<RoleHasPermission> rolePermissions= new HashSet<>();
 
 
 }
