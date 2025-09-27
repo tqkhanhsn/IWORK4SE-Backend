@@ -5,7 +5,7 @@ spring:
   devtools:
     add-properties: true
   datasource:
-    url: jdbc:postgresql://db.fsqxtwerrxfctnvqkxpi.supabase.co:5432/postgres
+    url: jdbc:postgresql://db.fsqxtwerrxfctnvqkxpi.supabase.co:5432/postgres?sslmode=require
     username: postgres
     password: 123456
     driver-class-name: org.postgresql.Driver
@@ -16,8 +16,16 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: update
+  redis:
+    data:
+      host: "${REDIS_HOST}"
+      port: "${REDIS_PORT}"
+      username: "${REDIS_USERNAME}"
+      password: "${REDIS_PASSWORD}"
+      database: 0
+      ssl: true
   sendGrid:
-    apiKey: ${SENDGRID_API_KEY}
+    apiKey: "${SENDGRID_API_KEY}"
     fromEmail: 21096301.khanh@student.iuh.edu.vn
     templateId: d-81068bbbc6324cb08b5543a41810e867
     verificationLink: http://localhost:8080/user/confirm-email
@@ -38,3 +46,4 @@ jwt:
   expiryDays: 7
   accessKey: "RCq2QWKOBB4vrCNdmlqYhfqpUK5SQeVNPOBZqX+awgE="
   refreshKey: "/OzKyt0P8FdZY995196f/QLB7aT2Ts8uSUvixqVjWKs="
+  key-prefix: "refresh_token:"

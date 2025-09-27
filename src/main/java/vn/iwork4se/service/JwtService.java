@@ -7,8 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 public interface JwtService {
-    String generateAccessToken(String username, List<String> authorities);
+    String generateAccessToken(String username,String platform, List<String> authorities);
 
-    String generateRefreshToken(String username, List<String> authorities);
+    String generateRefreshToken(String username,String platform, List<String> authorities);
     String extractUsername(String token, TokenType type);
+    String extractPlatform(String token, TokenType type);
 }
