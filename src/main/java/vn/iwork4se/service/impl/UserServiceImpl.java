@@ -1,16 +1,21 @@
 package vn.iwork4se.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.common.UserType;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
+import vn.iwork4se.controller.request.SignInRequest;
 import vn.iwork4se.controller.request.UserCreationRequest;
+import vn.iwork4se.controller.response.EmailVerificationResponse;
+import vn.iwork4se.controller.response.TokenResponse;
 import vn.iwork4se.controller.response.UserCreationResponse;
 import vn.iwork4se.exception.BadRequestException;
 import vn.iwork4se.exception.ResourceNotFoundException;
@@ -20,11 +25,13 @@ import vn.iwork4se.model.Role;
 import vn.iwork4se.model.User;
 import vn.iwork4se.repository.RoleRepository;
 import vn.iwork4se.repository.UserRepository;
+import vn.iwork4se.service.AuthenticationService;
 import vn.iwork4se.service.EmailService;
 import vn.iwork4se.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 
 import static vn.iwork4se.common.UserType.*;
@@ -37,6 +44,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final RoleRepository roleRepository;
+    private final AuthenticationService authenticationService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -83,8 +92,18 @@ public class UserServiceImpl implements UserService {
 
 
         User savedUser = userRepository.save(user);
+
+        SignInRequest request = SignInRequest.builder()
+                .username(req.getUserName())
+                .password(req.getPassword())
+                .platform(req.getPlatform())
+                .deviceToken(req.getDeviceToken())
+                .versionApp(req.getVersionApp())
+                .build();
+
+        TokenResponse tokenResponse = authenticationService.getAccessToken(request);
         try {
-            emailService.emailVerification(req.getEmail(),req.getFirstName()+ req.getLastName());
+            emailService.emailVerification(tokenResponse.getAccessToken(),req.getEmail(),req.getFirstName()+" "+ req.getLastName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -97,6 +116,8 @@ public class UserServiceImpl implements UserService {
                 .email(savedUser.getEmail())
                 .userName(savedUser.getUsername())
                 .userType(req.getUserType())
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
                 .build();
     }
 
@@ -118,6 +139,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         log.info("Changed password for user: {}", user);
+    }
+
+    public boolean verifySecretCode(String secretCode,String email) {
+        String redisKey = "email_verification:" + email;
+        String storedSecretCode = (String) redisTemplate.opsForValue().get(redisKey);
+        if (storedSecretCode == null) {
+            return false;
+        }
+        return storedSecretCode.equals(secretCode);
     }
     private User getUser(String id) {
         return userRepository.findById(id)

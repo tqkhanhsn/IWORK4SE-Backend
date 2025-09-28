@@ -18,4 +18,7 @@ public class UserCreationResponse implements Serializable {
     private String userName;
     private UserType userType;
 
+    private String accessToken;
+    private String refreshToken;
+
 }

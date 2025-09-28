@@ -12,12 +12,16 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ import java.util.UUID;
 public class EmailService {
 
     private final SendGrid sendGrid;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${spring.sendGrid.fromEmail}")
     private String from;
@@ -34,19 +39,23 @@ public class EmailService {
     private String verificationLink;
 
 
-    public void emailVerification(String to, String name) throws IOException {
+    public void emailVerification(String token, String to, String name) throws IOException {
         log.info("Sending email to: {}, name: {}", to, name);
 
         Email fromEmail = new Email(from, "iWork4SE");
         Email toEmail = new Email(to);
 
-        String secretCode = UUID.randomUUID().toString();
-        log.info("secretCode = {}", secretCode);
+        String secretCode = Base64.getEncoder().encodeToString(token.getBytes(StandardCharsets.UTF_8));
+        log.info("Generated secret code from encoded access token");
+
+        String redisKey = "email_verification:" + to;
+        redisTemplate.opsForValue().set(redisKey, secretCode, 1, TimeUnit.DAYS);
+        log.info("Stored verification data in Redis with key: {} for 1 day", redisKey);
 
 
         Map<String, String> dynamicTemplateData  = new HashMap<>();
         dynamicTemplateData .put("name", name);
-        dynamicTemplateData .put("verification_link", verificationLink + "?secretCode=" + secretCode);
+        dynamicTemplateData .put("verification_link", verificationLink + "?secretCode=" + secretCode+ "&email=" + to);
 
         Mail mail = new Mail();
         mail.setFrom(fromEmail);

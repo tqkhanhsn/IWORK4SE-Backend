@@ -36,6 +36,7 @@ public class AppConfig {
                         .requestMatchers("/user/**").permitAll()
                         .requestMatchers("/verify-email/**").permitAll()
                         .requestMatchers("/applicant/list").permitAll()
+                        .requestMatchers("/employer/*").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);

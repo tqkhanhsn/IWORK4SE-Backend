@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.iwork4se.service.EmailService;
@@ -18,10 +19,11 @@ public class EmailController {
     private final EmailService emailService;
 
     @GetMapping("/verify-email")
-    public void emailVerification(@RequestParam String to,@RequestParam String name){
+    public void emailVerification(@RequestHeader("Authorization") String authHeader,@RequestParam String to, @RequestParam String name){
         log.info("Sending email to: {}", to);
+        String token = authHeader.substring(7).trim();
         try {
-            emailService.emailVerification(to,name);
+            emailService.emailVerification(token,to,name);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -30,4 +30,8 @@ public class UserCreationRequest implements Serializable {
     @NotBlank(message = "Password is required")
     private String password;
     private UserType userType ;
+
+    private String platform;
+    private String deviceToken;
+    private String versionApp;
 }
