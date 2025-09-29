@@ -3,16 +3,14 @@ package vn.iwork4se.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.iwork4se.service.EmailService;
 
 import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/email")
 @Tag(name="Email controller")
 @Slf4j(topic = "EMAIL_CONTROLLER")
 public class EmailController {

@@ -141,13 +141,21 @@ public class UserServiceImpl implements UserService {
         log.info("Changed password for user: {}", user);
     }
 
-    public boolean verifySecretCode(String secretCode,String email) {
+    public boolean verifySecretCode(String email,String secretCode) {
         String redisKey = "email_verification:" + email;
         String storedSecretCode = (String) redisTemplate.opsForValue().get(redisKey);
+//        log.info("Code: {}",secretCode);
+//        log.info("Secret code: {}",storedSecretCode);
         if (storedSecretCode == null) {
             return false;
+        }else if(storedSecretCode.equals(secretCode)){
+            User user = userRepository.findByEmail(email);
+            user.setUserStatus(UserStatus.ACTIVE);
+            userRepository.save(user);
+            return true;
+        } else {
+            return false;
         }
-        return storedSecretCode.equals(secretCode);
     }
     private User getUser(String id) {
         return userRepository.findById(id)

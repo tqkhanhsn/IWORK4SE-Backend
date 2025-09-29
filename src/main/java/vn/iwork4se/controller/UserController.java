@@ -63,7 +63,7 @@ public class UserController {
 
     @Operation(summary = "Confirm email", description = "API to confirm email verification")
     @GetMapping("/confirm-email")
-    public void confirmEmail(@RequestParam String secretCode,String email, HttpServletResponse response) throws IOException {
+    public void confirmEmail(@RequestParam String email, @RequestParam String secretCode, HttpServletResponse response) throws IOException {
         log.info("Confirming email verification for user with code: {}", secretCode);
         try {
             boolean valid = userService.verifySecretCode(email, secretCode);

@@ -55,7 +55,7 @@ public class EmailService {
 
         Map<String, String> dynamicTemplateData  = new HashMap<>();
         dynamicTemplateData .put("name", name);
-        dynamicTemplateData .put("verification_link", verificationLink + "?secretCode=" + secretCode+ "&email=" + to);
+        dynamicTemplateData .put("verification_link", verificationLink + "?email=" + to+ "&secretCode=" + secretCode);
 
         Mail mail = new Mail();
         mail.setFrom(fromEmail);
