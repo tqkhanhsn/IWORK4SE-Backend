@@ -17,6 +17,7 @@ import vn.iwork4se.model.JobCategory;
 import vn.iwork4se.repository.JobCategoryRepository;
 import vn.iwork4se.service.JobCategoryService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,8 +42,8 @@ public class JobCategoryServiceImpl implements JobCategoryService {
         JobCategory jobCategory = JobCategory.builder()
                 .categoryName(request.getCategoryName())
                 .description(request.getDescription())
-                .createAt(LocalDateTime.now())
-                .updateAt(LocalDateTime.now())
+                .createAt(LocalDate.from(LocalDateTime.now()))
+                .updateAt(LocalDate.from(LocalDateTime.now()))
                 .build();
 
         JobCategory savedCategory = jobCategoryRepository.save(jobCategory);
@@ -53,7 +54,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
                 .id(savedCategory.getId())
                 .categoryName(savedCategory.getCategoryName())
                 .description(savedCategory.getDescription())
-                .createAt(savedCategory.getCreateAt())
+                .createAt(LocalDateTime.from(savedCategory.getCreateAt()))
                 .build();
     }
 
@@ -73,7 +74,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
 
         jobCategory.setCategoryName(request.getCategoryName());
         jobCategory.setDescription(request.getDescription());
-        jobCategory.setUpdateAt(LocalDateTime.now());
+        jobCategory.setUpdateAt(LocalDate.from(LocalDateTime.now()));
 
         jobCategoryRepository.save(jobCategory);
 
@@ -285,8 +286,8 @@ public class JobCategoryServiceImpl implements JobCategoryService {
                 .id(jobCategory.getId())
                 .categoryName(jobCategory.getCategoryName())
                 .description(jobCategory.getDescription())
-                .createAt(jobCategory.getCreateAt())
-                .updateAt(jobCategory.getUpdateAt())
+                .createAt(LocalDateTime.from(jobCategory.getCreateAt()))
+                .updateAt(LocalDateTime.from(jobCategory.getUpdateAt()))
                 .jobPostCount(jobPostCount)
                 .build();
     }
