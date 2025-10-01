@@ -62,7 +62,7 @@ public class JobPostServiceImpl implements JobPostService {
         // 30 ngày kể từ ngày tạo
         jobPost.setClosingDate(jobPost.getPostedDate().plusDays(30));
         jobPost.setVacancies(request.getVacancies());
-        jobPost.setJobStatus(JobStatus.PENDING);
+        jobPost.setJobStatus(JobStatus.PENDING);  // Ơending là trạng thái đợi duyệt, để apply cần chuyn sang
         jobPost.setJobType(JobType.valueOf(request.getJobType().toUpperCase()));
         jobPost.setUpdateAt(LocalDateTime.now());
         Employer employer = employerRepository.findById(request.getEmployerId())

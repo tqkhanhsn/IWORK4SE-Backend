@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "tb_applicant")
+@Table(name = "tbl_applicant")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
