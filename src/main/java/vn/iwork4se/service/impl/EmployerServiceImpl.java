@@ -8,23 +8,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
-import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
-import vn.iwork4se.controller.response.EmployerCreationResponse;
 import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
-import vn.iwork4se.model.Applicant;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
+import vn.iwork4se.service.EmailService;
 import vn.iwork4se.service.EmployerService;
 
-import java.time.LocalDate;
+import java.io.IOException;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -38,41 +37,11 @@ public class EmployerServiceImpl implements EmployerService {
     private final EmployerRepository employerRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
 
     @Override
-    public EmployerCreationResponse save(EmployerCreationRequest req) {
-        log.info("Creat user with request: {}", req);
-        if (userRepository.existsByEmail(req.getEmail())) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        if (userRepository.existsByUserName(req.getUserName())) {
-            throw new RuntimeException("Username already exists");
-        }
-
-        Employer employer = new Employer();
-        employer.setId("EMP-" + UUID.randomUUID().toString());
-        employer.setFirstName(req.getFirstName());
-        employer.setLastName(req.getLastName());
-        employer.setEmail(req.getEmail());
-        employer.setUserName(req.getUserName());
-        employer.setPassword(passwordEncoder.encode(req.getPassword()));
-        employer.setUserStatus(UserStatus.INACTIVE);
-        employer.setCreateAt(LocalDate.now());
-
-
-        Employer savedEmployer = employerRepository.save(employer);
-
-        return EmployerCreationResponse.builder()
-                .id(savedEmployer.getId())
-                .firstName(savedEmployer.getFirstName())
-                .lastName(savedEmployer.getLastName())
-                .email(savedEmployer.getEmail())
-                .userName(savedEmployer.getUserName())
-                .build();
-    }
-
-    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateEmployer(EmployerUpdateRequest req) {
         log.info("Update employer with request: {}", req);
         Employer employer = getEmployerById(req.getId());
@@ -82,7 +51,6 @@ public class EmployerServiceImpl implements EmployerService {
         employer.setBirthday(req.getBirthday());
         employer.setPhone(req.getPhone());
         employer.setGender(req.getGender());
-        employer.setUpdateAt(LocalDate.now());
         employer.setCompanyName(req.getCompanyName());
         employer.setLocation(req.getLocation());
         employer.setIndustry(req.getIndustry());
@@ -92,16 +60,8 @@ public class EmployerServiceImpl implements EmployerService {
 
     }
 
-    @Override
-    public void changePasswordEmployer(ChangePasswordRequest req) {
-        log.info("Changing password for user with request: {}", req);
-        Employer employer = getEmployerById(req.getId());
-        if(req.getPassword().equals(req.getConfirmPassword())) {
-            employer.setPassword(passwordEncoder.encode(req.getPassword()));
-        }
-        employerRepository.save(employer);
-        log.info("Change password user: {}", employer);
-    }
+
+
 
     @Override
     public EmployerResponse findEmployerById(String id) {

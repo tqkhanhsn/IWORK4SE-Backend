@@ -3,6 +3,7 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
@@ -20,6 +21,7 @@ public class CV {
     @Column(nullable = false)
     private String url;
 
+    @CreationTimestamp
     @Column(name = "uploaded_date")
     private LocalDate uploadedDate;
 

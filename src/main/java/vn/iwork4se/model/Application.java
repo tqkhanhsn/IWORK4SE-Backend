@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import vn.iwork4se.common.ApplicationStatus;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,7 @@ public class Application {
     @JoinColumn(name = "applicant_id", nullable = false)
     private Applicant applicant;
 
+    @CreationTimestamp
     @Column(name = "applied_at")
     private LocalDateTime appliedAt;
 

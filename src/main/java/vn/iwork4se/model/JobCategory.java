@@ -2,7 +2,10 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,11 +28,13 @@ public class JobCategory {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @CreationTimestamp
     @Column(name = "create_at")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
 
+    @UpdateTimestamp
     @Column(name = "update_at")
-    private LocalDateTime updateAt;
+    private LocalDate updateAt;
 
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)

@@ -2,6 +2,7 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 
@@ -24,6 +25,7 @@ public class SavedJob {
     @JoinColumn(name = "job_id", nullable = false)
     private JobPost job;
 
+    @CreationTimestamp
     @Column(name = "saved_date")
     private LocalDate savedDate;
 }

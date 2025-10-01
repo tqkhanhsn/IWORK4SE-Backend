@@ -5,15 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import vn.iwork4se.common.Gender;
+import vn.iwork4se.common.UserType;
+import vn.iwork4se.service.UserService;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 
 @Getter
 @Setter
 @ToString
-public class ApplicantCreationRequest implements Serializable {
+public class UserCreationRequest implements Serializable {
     @NotBlank(message = "First name is required")
     private String firstName;
 
@@ -29,15 +29,9 @@ public class ApplicantCreationRequest implements Serializable {
 
     @NotBlank(message = "Password is required")
     private String password;
+    private UserType userType ;
 
-//    private String address;
-//    private LocalDate birthday;
-//    private String phone;
-//    private Gender gender;
-//
-//    private Integer yearsOfExperience;
-//    private String careerObjective;
-//    private String universityName;
-//    private Double gpa;
-//    private String major;
+    private String platform;
+    private String deviceToken;
+    private String versionApp;
 }

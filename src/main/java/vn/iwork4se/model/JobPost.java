@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import vn.iwork4se.common.JobStatus;
 import vn.iwork4se.common.JobType;
 
@@ -43,6 +45,7 @@ public class JobPost {
     @Column(name = "max_salary")
     private Double maxSalary;
 
+    @CreationTimestamp
     @Column(name = "posted_date")
     private LocalDate postedDate;
 
@@ -60,6 +63,7 @@ public class JobPost {
     private JobType jobType;
 
 
+    @UpdateTimestamp
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
