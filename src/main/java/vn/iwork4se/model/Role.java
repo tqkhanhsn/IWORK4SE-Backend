@@ -7,7 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tbl_role")
@@ -33,11 +35,11 @@ public class Role {
     private LocalDateTime updateAt;
 
 
-    @OneToOne(mappedBy = "role")
-    private User user;
+    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<User> users =new HashSet<>();
 
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    private List<RoleHasPermission> rolePermissions;
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Set<RoleHasPermission> rolePermissions = new HashSet<>();
 
 
 }

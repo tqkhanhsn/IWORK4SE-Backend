@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import vn.iwork4se.common.JobStatus;
 import vn.iwork4se.common.JobType;
+import vn.iwork4se.elasticsearch.listener.JobPostIndexListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tbl_job_post")
+@EntityListeners(JobPostIndexListener.class)
 @Data
 @Builder
 @NoArgsConstructor
