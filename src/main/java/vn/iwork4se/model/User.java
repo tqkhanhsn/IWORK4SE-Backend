@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.common.UserType;
+import vn.iwork4se.elasticsearch.listener.UserIndexListener;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tbl_users")
+@EntityListeners(UserIndexListener.class)
 @Data
 @Builder
 @NoArgsConstructor

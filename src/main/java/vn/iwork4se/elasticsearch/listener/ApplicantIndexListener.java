@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.event.TransactionPhase;
 import vn.iwork4se.elasticsearch.service.ApplicantSearchService;
 import vn.iwork4se.model.Applicant;
 
@@ -21,7 +23,15 @@ public class ApplicantIndexListener {
     @PostPersist
     @PostUpdate
     public void onPostPersistOrUpdate(Applicant applicant) {
-        log.info("Applicant entity changed, syncing to Elasticsearch: {}", applicant.getId());
+        log.info("Applicant entity changed, scheduling sync to Elasticsearch: {}", applicant.getId());
+        // Trigger the actual sync after transaction commits
+        syncAfterCommit(applicant);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void syncAfterCommit(Applicant applicant) {
+        log.info("Transaction committed, syncing applicant to Elasticsearch: {}", applicant.getId());
+
         try {
             if (applicantSearchService != null) {
                 applicantSearchService.syncApplicantFromDatabase(applicant.getId());

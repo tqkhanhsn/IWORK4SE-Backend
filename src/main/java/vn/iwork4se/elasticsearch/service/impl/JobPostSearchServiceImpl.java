@@ -2,6 +2,7 @@ package vn.iwork4se.elasticsearch.service.impl;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -301,6 +302,7 @@ public class JobPostSearchServiceImpl implements JobPostSearchService {
     @SuppressWarnings("unchecked")
     private JobPostDocument fetchJobPostDataWithSQL(String jobPostId) {
         try {
+            entityManager.setFlushMode(FlushModeType.COMMIT);
             // Fetch job post data with employer and category info
             String sql = """
                 SELECT DISTINCT 

@@ -2,12 +2,14 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.iwork4se.elasticsearch.listener.CertificateIndexListener;
 
 import java.time.LocalDate;
 
 
 @Entity
 @Table(name = "tbl_applicant_certificate")
+@EntityListeners(CertificateIndexListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

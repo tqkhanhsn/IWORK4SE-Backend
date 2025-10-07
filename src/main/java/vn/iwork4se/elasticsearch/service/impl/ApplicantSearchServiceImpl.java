@@ -2,6 +2,7 @@ package vn.iwork4se.elasticsearch.service.impl;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -276,6 +277,8 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
     @SuppressWarnings("unchecked")
     private ApplicantDocument fetchApplicantDataWithSQL(String applicantId) {
         try {
+            entityManager.setFlushMode(FlushModeType.COMMIT);
+
             // Fetch applicant basic data
             String sql = """
                 SELECT DISTINCT 
@@ -380,6 +383,8 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
         } catch (Exception e) {
             log.error("Error fetching applicant data with SQL for {}: {}", applicantId, e.getMessage(), e);
             return null;
+        } finally {
+            entityManager.setFlushMode(FlushModeType.AUTO);
         }
     }
 }
