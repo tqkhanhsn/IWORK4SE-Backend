@@ -36,6 +36,7 @@ public class AppConfig {
                         .requestMatchers("/user/sign-up").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/user/confirm-email").permitAll()
+                        .requestMatchers("/search/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);

@@ -8,8 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.iwork4se.model.Applicant;
 
+import java.util.List;
+
 @Repository
 public interface ApplicantRepository extends JpaRepository<Applicant, String> {
+    @Query("SELECT a.id FROM Applicant a")
+    List<String> findAllIds();
+
     @Query("SELECT DISTINCT a FROM Applicant a LEFT JOIN a.certificates c WHERE a.userStatus = 'ACTIVE' AND (" +
             "lower(a.firstName) LIKE lower(CONCAT('%', :keyword, '%')) OR " +
             "lower(a.lastName) LIKE lower(CONCAT('%', :keyword, '%')) OR " +

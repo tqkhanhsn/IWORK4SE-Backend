@@ -24,6 +24,10 @@ spring:
       password: "${REDIS_PASSWORD}"
       database: 0
       ssl: true
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 5s
+    socket-timeout: 60s
   sendGrid:
     apiKey: "${SENDGRID_API_KEY}"
     fromEmail: 21096301.khanh@student.iuh.edu.vn

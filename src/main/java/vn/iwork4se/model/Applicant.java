@@ -2,12 +2,14 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.iwork4se.elasticsearch.listener.ApplicantIndexListener;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "tbl_applicant")
+@EntityListeners(ApplicantIndexListener.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
