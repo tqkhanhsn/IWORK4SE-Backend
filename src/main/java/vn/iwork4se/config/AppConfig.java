@@ -33,10 +33,11 @@ public class AppConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/user/sign-up").permitAll()
-                        .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/user/confirm-email").permitAll()
-                        .requestMatchers("/search/**").permitAll()
+//                        .requestMatchers("/user/sign-up").permitAll()
+//                        .requestMatchers("/auth/login").permitAll()
+//                        .requestMatchers("/user/confirm-email").permitAll()
+//                        .requestMatchers("/search/**").permitAll()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);

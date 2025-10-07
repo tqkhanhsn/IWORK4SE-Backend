@@ -13,6 +13,9 @@ public interface JobPostSearchService {
     // Index a job post
     JobPostDocument indexJobPost(JobPostDocument document);
 
+    // Sync all job posts for a specific employer
+    void syncJobPostsByEmployerId(String employerId);
+
     // Delete a job post from index
     void deleteJobPost(String id);
 

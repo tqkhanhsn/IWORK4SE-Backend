@@ -11,7 +11,7 @@ import java.util.Set;
 @Table(name = "tbl_employer")
 @EntityListeners(EmployerIndexListener.class)
 @Data
-@EqualsAndHashCode(callSuper = true)
+//@EqualsAndHashCode(callSuper = true, exclude = "jobPosts")
 @NoArgsConstructor
 @AllArgsConstructor
 @PrimaryKeyJoinColumn(name = "user_id")

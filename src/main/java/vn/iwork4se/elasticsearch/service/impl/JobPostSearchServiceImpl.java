@@ -298,6 +298,32 @@ public class JobPostSearchServiceImpl implements JobPostSearchService {
             throw new RuntimeException("Failed to delete and resync", e);
         }
     }
+    @Override
+    @SuppressWarnings("unchecked")
+    public void syncJobPostsByEmployerId(String employerId) {
+        log.info("Syncing job posts for employer: {}", employerId);
+
+        try {
+            // Query job post IDs directly from database without accessing lazy collections
+            List<String> jobPostIds = entityManager.createNativeQuery(
+                    "SELECT id FROM tbl_job_post WHERE employer_id = ?1"
+            ).setParameter(1, employerId).getResultList();
+
+            log.info("Found {} job posts for employer {}", jobPostIds.size(), employerId);
+
+            for (String jobPostId : jobPostIds) {
+                try {
+                    syncJobPostFromDatabase(jobPostId);
+                } catch (Exception e) {
+                    log.error("Error syncing job post {} for employer {}: {}", jobPostId, employerId, e.getMessage());
+                }
+            }
+
+            log.info("Completed syncing job posts for employer: {}", employerId);
+        } catch (Exception e) {
+            log.error("Error syncing job posts for employer {}: {}", employerId, e.getMessage(), e);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     private JobPostDocument fetchJobPostDataWithSQL(String jobPostId) {
