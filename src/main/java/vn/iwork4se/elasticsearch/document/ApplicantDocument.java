@@ -86,6 +86,11 @@ public class ApplicantDocument {
     @Field(type = FieldType.Text, analyzer = "standard")
     private Set<String> issuingOrganizations;
 
+    @Field(type = FieldType.Keyword)
+    private Set<String> savedInListIds;
+
     @Field(type = FieldType.Text, analyzer = "standard")
     private String searchableText;
+
+
 }

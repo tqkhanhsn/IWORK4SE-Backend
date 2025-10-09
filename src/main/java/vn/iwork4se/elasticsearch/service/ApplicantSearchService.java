@@ -27,6 +27,7 @@ public interface ApplicantSearchService {
             String university,
             Gender gender,
             UserStatus userStatus,
+            String savedApplicantListId,
             Pageable pageable
     );
 

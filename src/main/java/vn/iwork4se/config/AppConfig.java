@@ -49,7 +49,7 @@ public class AppConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/user/confirm-email/**").permitAll()
                         .requestMatchers("/auth/refresh-token/**").permitAll()
-//                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);

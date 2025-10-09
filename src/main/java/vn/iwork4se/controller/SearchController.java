@@ -53,20 +53,20 @@ public class SearchController {
         return ResponseEntity.ok(results);
     }
 
-//    @GetMapping("/job-posts/keywords")
-//    @Operation(summary = "Simple keyword search for job posts")
-//    public ResponseEntity<Page<JobPostDocument>> searchJobPostsByKeywords(
-//            @RequestParam String keywords,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "20") int size
-//    ) {
-//        log.info("Simple keyword search for job posts: {}", keywords);
-//
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<JobPostDocument> results = jobPostSearchService.searchByKeywords(keywords, pageable);
-//
-//        return ResponseEntity.ok(results);
-//    }
+    @GetMapping("/job-posts/keywords")
+    @Operation(summary = "Simple keyword search for job posts")
+    public ResponseEntity<Page<JobPostDocument>> searchJobPostsByKeywords(
+            @RequestParam String keywords,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        log.info("Simple keyword search for job posts: {}", keywords);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<JobPostDocument> results = jobPostSearchService.searchByKeywords(keywords, pageable);
+
+        return ResponseEntity.ok(results);
+    }
 
     @PostMapping("/applicants")
     @Operation(summary = "Search applicants with multi-field keywords and filters")
@@ -84,26 +84,27 @@ public class SearchController {
                 request.getUniversity(),
                 request.getGender(),
                 request.getUserStatus(),
+                request.getSavedApplicantListId(),
                 pageable
         );
 
         return ResponseEntity.ok(results);
     }
 
-//    @GetMapping("/applicants/keywords")
-//    @Operation(summary = "Simple keyword search for applicants")
-//    public ResponseEntity<Page<ApplicantDocument>> searchApplicantsByKeywords(
-//            @RequestParam String keywords,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "20") int size
-//    ) {
-//        log.info("Simple keyword search for applicants: {}", keywords);
-//
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<ApplicantDocument> results = applicantSearchService.searchByKeywords(keywords, pageable);
-//
-//        return ResponseEntity.ok(results);
-//    }
+    @GetMapping("/applicants/keywords")
+    @Operation(summary = "Simple keyword search for applicants")
+    public ResponseEntity<Page<ApplicantDocument>> searchApplicantsByKeywords(
+            @RequestParam String keywords,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        log.info("Simple keyword search for applicants: {}", keywords);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ApplicantDocument> results = applicantSearchService.searchByKeywords(keywords, pageable);
+
+        return ResponseEntity.ok(results);
+    }
 
     @PostMapping("/sync/job-posts")
     @Operation(summary = "Sync all job posts from database to Elasticsearch")
@@ -148,8 +149,6 @@ public class SearchController {
                     .body("Error resyncing: " + e.getMessage());
         }
     }
-
-
 
     @PostMapping("/applicants/resync-all")
     public ResponseEntity<String> resyncAllApplicants() {

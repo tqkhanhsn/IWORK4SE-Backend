@@ -381,7 +381,6 @@ public class JobPostSearchServiceImpl implements JobPostSearchService {
             // Build searchable text
             StringBuilder searchableText = new StringBuilder();
             if (title != null) searchableText.append(title).append(" ");
-            if (description != null) searchableText.append(description).append(" ");
             if (jobPosition != null) searchableText.append(jobPosition).append(" ");
             if (location != null) searchableText.append(location).append(" ");
             if (experience != null) searchableText.append(experience).append(" ");

@@ -31,4 +31,7 @@ public class Employer extends User{
 
     @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL)
     private Set<JobPost> jobPosts = new HashSet<>();
+
+    @OneToMany(mappedBy = "employer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SavedApplicantList> savedApplicantLists = new HashSet<>();
 }

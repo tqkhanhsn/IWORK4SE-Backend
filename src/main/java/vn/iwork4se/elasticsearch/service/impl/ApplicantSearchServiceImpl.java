@@ -94,9 +94,11 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
             String university,
             Gender gender,
             UserStatus userStatus,
+            String savedApplicantListId,
             Pageable pageable
     ) {
-        log.info("Advanced search applicants - keywords: {}, minExp: {}, minGpa: {}", keywords, minExperience, minGpa);
+        log.info("Advanced search applicants - keywords: {}, minExp: {}, minGpa: {}, listId: {}",
+                keywords, minExperience, minGpa, savedApplicantListId);
 
         List<Query> mustQueries = new ArrayList<>();
         List<Query> filterQueries = new ArrayList<>();
@@ -109,7 +111,7 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
             mustQueries.add(Query.of(q -> q.match(m -> m
                     .field("searchableText")
                     .query(keywords)
-                    .operator(Operator.And) // All keywords must be present
+                    .operator(Operator.And)
             )));
         }
 
@@ -151,6 +153,13 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
         // Gender filter
         if (gender != null) {
             filterQueries.add(Query.of(q -> q.term(t -> t.field("gender").value(gender.name()))));
+        }
+
+        if (savedApplicantListId != null && !savedApplicantListId.trim().isEmpty()) {
+            filterQueries.add(Query.of(q -> q.term(t -> t
+                    .field("savedInListIds")
+                    .value(savedApplicantListId)
+            )));
         }
 
         BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
@@ -336,6 +345,10 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
                 if (cert[1] != null) issuingOrgs.add((String) cert[1]);
             }
 
+            List<String> savedInListIds = entityManager.createNativeQuery(
+                    "SELECT DISTINCT list_id FROM tbl_applicant_saved_in_lists WHERE applicant_id = ?1"
+            ).setParameter(1, applicantId).getResultList();
+
             // Build searchable text
             StringBuilder searchableText = new StringBuilder();
             if (firstName != null) searchableText.append(firstName).append(" ");
@@ -361,7 +374,7 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
                     .firstName(firstName)
                     .lastName(lastName)
                     .email(email)
-                    .userName(email) // Using email as username
+                    .userName(email)
                     .address(address)
                     .birthday(birthday != null ? birthday.toLocalDate() : null)
                     .phone(phone)
@@ -377,6 +390,7 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
                     .skills(new HashSet<>(skills))
                     .certificateNames(certificateNames)
                     .issuingOrganizations(issuingOrgs)
+                    .savedInListIds(new HashSet<>(savedInListIds))
                     .searchableText(searchableText.toString().trim())
                     .build();
 

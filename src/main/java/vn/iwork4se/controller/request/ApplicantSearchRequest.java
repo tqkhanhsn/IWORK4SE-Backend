@@ -20,6 +20,7 @@ public class ApplicantSearchRequest {
     private String university;
     private Gender gender;
     private UserStatus userStatus;
+    private String savedApplicantListId;
     private Integer page = 0;
     private Integer size = 20;
 }

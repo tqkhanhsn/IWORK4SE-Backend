@@ -45,4 +45,12 @@ public class Applicant extends User {
 
     @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
     private Set<CV> cvs = new HashSet<>();
+
+    @OneToMany(mappedBy = "applicant", cascade = CascadeType.ALL)
+    private Set<SavedApplicant> savedByEmployers = new HashSet<>();
+
+    @ElementCollection
+    @CollectionTable(name = "tbl_applicant_saved_in_lists", joinColumns = @JoinColumn(name = "applicant_id"))
+    @Column(name = "list_id")
+    private Set<String> savedInListIds = new HashSet<>();
 }
