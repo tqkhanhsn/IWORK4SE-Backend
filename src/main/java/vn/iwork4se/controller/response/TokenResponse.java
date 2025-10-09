@@ -3,6 +3,7 @@ package vn.iwork4se.controller.response;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import vn.iwork4se.model.Role;
 
 import java.io.Serializable;
 
@@ -12,4 +13,6 @@ import java.io.Serializable;
 public class TokenResponse implements Serializable {
     private String accessToken;
     private String refreshToken;
+    private String role;
+    private String userId;
 }

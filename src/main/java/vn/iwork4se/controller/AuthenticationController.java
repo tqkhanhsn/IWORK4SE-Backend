@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,8 @@ import vn.iwork4se.service.JwtService;
 import vn.iwork4se.service.RefreshTokenService;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 @RestController
@@ -32,14 +35,18 @@ public class AuthenticationController {
 
     @Operation(summary = "Access token", description = "API to get access token")
     @PostMapping("/login")
-    public TokenResponse login(@RequestBody SignInRequest request) {
+    public Map<String,Object> login(@RequestBody SignInRequest request) {
         log.info("Getting access token");
-        return authenticationService.getAccessToken(request);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "User login successfully");
+        result.put("data",authenticationService.getAccessToken(request));
+        return result;
     }
 
     @Operation(summary = "Refresh token", description = "API to get refresh token")
     @PostMapping("/refresh-token")
-    public TokenResponse getRefreshToken(@RequestBody String refreshToken) {
+    public TokenResponse getRefreshToken(@RequestParam String refreshToken) {
         log.info("Getting refresh token");
         return authenticationService.getRefreshToken(refreshToken);
     }

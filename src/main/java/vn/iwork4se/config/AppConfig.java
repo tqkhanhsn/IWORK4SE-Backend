@@ -19,6 +19,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import vn.iwork4se.service.UserServiceDetail;
 
+import java.util.List;
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -31,12 +33,22 @@ public class AppConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(request -> {
+                    var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                    corsConfig.setAllowedOrigins(List.of("http://localhost:3000"));
+                    corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                    corsConfig.setAllowedHeaders(List.of("*"));
+                    corsConfig.setExposedHeaders(List.of("Authorization", "Content-Type"));
+                    corsConfig.setAllowCredentials(true);
+                    return corsConfig;
+                }))
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/user/sign-up").permitAll()
                         .requestMatchers("/auth/login").permitAll()
-                        .requestMatchers("/user/confirm-email").permitAll()
-                        .requestMatchers("/search/**").permitAll()
+                        .requestMatchers("/user/confirm-email/**").permitAll()
+                        .requestMatchers("/auth/refresh-token/**").permitAll()
 //                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

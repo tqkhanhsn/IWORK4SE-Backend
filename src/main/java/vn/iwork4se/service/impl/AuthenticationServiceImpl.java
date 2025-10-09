@@ -55,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("errorMessage: {}", e.getMessage());
             throw new AccessDeniedException(e.getMessage());
         }
-
+        User user = userRepository.findByUserName(request.getUsername());
         String accessToken = jwtService.generateAccessToken(request.getUsername(),request.getPlatform(), authorities);
         String refreshToken = jwtService.generateRefreshToken(request.getUsername(),request.getPlatform(), authorities);
         try {
@@ -65,7 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("Failed to store refresh token in Redis for user: {}, error: {}", request.getUsername(), e.getMessage());
         }
 
-        return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).build();
+        return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).role(user.getRole().getName()).userId(user.getId()).build();
     }
 
 

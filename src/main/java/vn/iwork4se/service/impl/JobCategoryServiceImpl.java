@@ -42,8 +42,8 @@ public class JobCategoryServiceImpl implements JobCategoryService {
         JobCategory jobCategory = JobCategory.builder()
                 .categoryName(request.getCategoryName())
                 .description(request.getDescription())
-                .createAt(LocalDate.from(LocalDateTime.now()))
-                .updateAt(LocalDate.from(LocalDateTime.now()))
+                .createAt(LocalDate.now())
+                .updateAt(LocalDate.now())
                 .build();
 
         JobCategory savedCategory = jobCategoryRepository.save(jobCategory);
@@ -54,7 +54,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
                 .id(savedCategory.getId())
                 .categoryName(savedCategory.getCategoryName())
                 .description(savedCategory.getDescription())
-                .createAt(LocalDateTime.from(savedCategory.getCreateAt()))
+                .createAt(savedCategory.getCreateAt().atStartOfDay())
                 .build();
     }
 
@@ -74,7 +74,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
 
         jobCategory.setCategoryName(request.getCategoryName());
         jobCategory.setDescription(request.getDescription());
-        jobCategory.setUpdateAt(LocalDate.from(LocalDateTime.now()));
+        jobCategory.setUpdateAt(LocalDate.now());
 
         jobCategoryRepository.save(jobCategory);
 
@@ -87,7 +87,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     @Override
     public void deleteJobCategory(Long id) {
         JobCategory jobCategory = getJobCategoryById(id);
-        
+
         // Check if category has job posts
         long jobPostCount = countJobPostsByCategory(id);
         if (jobPostCount > 0) {
@@ -119,27 +119,27 @@ public class JobCategoryServiceImpl implements JobCategoryService {
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
             if (sortParams.length == 2) {
-                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ? 
-                    Sort.Direction.DESC : Sort.Direction.ASC;
+                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ?
+                        Sort.Direction.DESC : Sort.Direction.ASC;
                 sortObj = Sort.by(direction, sortParams[0]);
             }
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<JobCategory> categoryPage;
-        
+
         // Search by keyword if provided
         if (keyword != null && !keyword.trim().isEmpty()) {
             categoryPage = jobCategoryRepository.findByKeyword(keyword.trim(), pageable);
         } else {
             categoryPage = jobCategoryRepository.findAll(pageable);
         }
-        
+
         // Convert to response
         List<JobCategoryResponse> categoryResponses = categoryPage.getContent().stream()
                 .map(this::convertToJobCategoryResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobCategoryPageResponse(
                 categoryResponses,
                 categoryPage.getNumber(),
@@ -166,11 +166,11 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     public JobCategoryPageResponse findJobCategoriesByName(String categoryName, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "categoryName"));
         Page<JobCategory> categoryPage = jobCategoryRepository.findByCategoryNameContainingIgnoreCase(categoryName, pageable);
-        
+
         List<JobCategoryResponse> categoryResponses = categoryPage.getContent().stream()
                 .map(this::convertToJobCategoryResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobCategoryPageResponse(
                 categoryResponses,
                 categoryPage.getNumber(),
@@ -188,11 +188,11 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     public JobCategoryPageResponse findJobCategoriesByDescription(String description, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "categoryName"));
         Page<JobCategory> categoryPage = jobCategoryRepository.findByDescriptionContainingIgnoreCase(description, pageable);
-        
+
         List<JobCategoryResponse> categoryResponses = categoryPage.getContent().stream()
                 .map(this::convertToJobCategoryResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobCategoryPageResponse(
                 categoryResponses,
                 categoryPage.getNumber(),
@@ -209,11 +209,11 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     public JobCategoryPageResponse findJobCategoriesWithMostJobPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         List<JobCategory> categories = jobCategoryRepository.findCategoriesWithMostJobPosts(pageable);
-        
+
         List<JobCategoryResponse> categoryResponses = categories.stream()
                 .map(this::convertToJobCategoryResponse)
                 .collect(Collectors.toList());
-        
+
         // For simplicity, we'll return a page response with the list
         // In a real scenario, you might want to implement proper pagination
         return new JobCategoryPageResponse(
@@ -228,6 +228,7 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     // Lấy job category by name (exact match)
     // truyền vào data ví dụ : categoryName=IT
     // categoryName là tên của category
+    // trả về job category response
     @Override
     public JobCategoryResponse findJobCategoryByName(String categoryName) {
         JobCategory jobCategory = jobCategoryRepository.findByCategoryNameIgnoreCase(categoryName)
@@ -281,13 +282,13 @@ public class JobCategoryServiceImpl implements JobCategoryService {
     // dùng để lấy data cho job category response cho frontend
     private JobCategoryResponse convertToJobCategoryResponse(JobCategory jobCategory) {
         long jobPostCount = countJobPostsByCategory(jobCategory.getId());
-        
+
         return JobCategoryResponse.builder()
                 .id(jobCategory.getId())
                 .categoryName(jobCategory.getCategoryName())
                 .description(jobCategory.getDescription())
-                .createAt(LocalDateTime.from(jobCategory.getCreateAt()))
-                .updateAt(LocalDateTime.from(jobCategory.getUpdateAt()))
+                .createAt(jobCategory.getCreateAt().atStartOfDay())
+                .updateAt(jobCategory.getUpdateAt().atStartOfDay())
                 .jobPostCount(jobPostCount)
                 .build();
     }
