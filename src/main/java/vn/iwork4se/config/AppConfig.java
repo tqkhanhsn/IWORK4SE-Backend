@@ -28,6 +28,21 @@ public class AppConfig {
     private final CustomizeRequestFilter customizeRequestFilter;
     private final UserServiceDetail userServiceDetail;
 
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http.csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
+//                        .requestMatchers("/user/sign-up").permitAll()
+//                        .requestMatchers("/auth/login").permitAll()
+//                        .requestMatchers("/user/confirm-email").permitAll()
+//                        .requestMatchers("/job-post/active").permitAll()
+//                        .anyRequest().authenticated())
+//                .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
+//    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,6 +51,22 @@ public class AppConfig {
                         .requestMatchers("/user/sign-up").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/user/confirm-email").permitAll()
+                        // Job Post APIs - Allow public access
+                        .requestMatchers("/job-post/**").permitAll()
+                        // Employer APIs - Allow public access
+                        .requestMatchers("/employer/**").permitAll()
+                        // Job Category APIs - Allow public access
+                        .requestMatchers("/job-category/**").permitAll()
+                        // Application APIs - Allow public access for viewing
+                        .requestMatchers("/application/**").permitAll()
+                        // CV APIs - Allow public access for viewing
+                        .requestMatchers("/cv/**").permitAll()
+                        // Saved Job APIs - Allow public access
+                        .requestMatchers("/saved-job/**").permitAll()
+                        // Notification APIs - Allow public access
+                        .requestMatchers("/notification/**").permitAll()
+                        // Email APIs - Allow public access
+                        .requestMatchers("/email/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -58,7 +89,9 @@ public class AppConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setPasswordEncoder(passwordEncoder());
-        authProvider.setUserDetailsService(userServiceDetail.UserServiceDetail());
+//        authProvider.setUserDetailsService(userServiceDetail.UserServiceDetail());
+        authProvider.setUserDetailsService(userServiceDetail.userDetailsService());
+
         return  authProvider;
 
     }

@@ -63,7 +63,8 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                 return;
             }
 
-            UserDetails userDetails =  userServiceDetail.UserServiceDetail().loadUserByUsername(userName);
+//            UserDetails userDetails =  userServiceDetail.UserServiceDetail().loadUserByUsername(userName);
+            UserDetails userDetails =  userServiceDetail.userDetailsService().loadUserByUsername(userName);
 
             if (userDetails instanceof User) {
                 if (!hasPermission(userDetails, requestPath, requestMethod)) {
