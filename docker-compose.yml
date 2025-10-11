@@ -1,25 +1,8 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15
-    container_name: postgres-iwork4se
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: postgres
-      PGDATA: /var/lib/postgresql/data
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./initdb.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - '5439:5432'
-    networks:
-      - backend-net
-
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.5
     container_name: elasticsearch-iwork4se
     restart: unless-stopped
     environment:
@@ -40,22 +23,44 @@ services:
       retries: 5
 
   backend-service:
-    container_name: backend-service
+    container_name: backend-service-iwork4se
     build:
       context: ./
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+      - SPRING_DATASOURCE_USERNAME=postgres.fsqxtwerrxfctnvqkxpi
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_USERNAME=${REDIS_USERNAME}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
+
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+
+
     depends_on:
-      - postgres
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - backend-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 networks:
   backend-net:
     driver: bridge
 
 volumes:
-  postgres_data:
   elasticsearch_data:

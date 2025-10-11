@@ -4,11 +4,28 @@ spring:
       on-profile: dev
   devtools:
     add-properties: true
+#  datasource:
+#    url: jdbc:postgresql://db.fsqxtwerrxfctnvqkxpi.supabase.co:5432/postgres?sslmode=require
+#    username: postgres
+#    password: 123456
+#    driver-class-name: org.postgresql.Driver
+
   datasource:
-    url: jdbc:postgresql://db.fsqxtwerrxfctnvqkxpi.supabase.co:5432/postgres?sslmode=require
-    username: postgres
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.fsqxtwerrxfctnvqkxpi
     password: 123456
     driver-class-name: org.postgresql.Driver
+
+    hikari:
+
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 60000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
+
   jpa:
     properties:
       hibernate:
