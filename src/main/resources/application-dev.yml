@@ -68,3 +68,8 @@ jwt:
   accessKey: "RCq2QWKOBB4vrCNdmlqYhfqpUK5SQeVNPOBZqX+awgE="
   refreshKey: "/OzKyt0P8FdZY995196f/QLB7aT2Ts8uSUvixqVjWKs="
   key-prefix: "refresh_token:"
+supabase:
+  url: https://fsqxtwerrxfctnvqkxpi.supabase.co
+  service-role-key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZzcXh0d2VycnhmY3RudnFreHBpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NzY4NzE3MiwiZXhwIjoyMDczMjYzMTcyfQ.6kSGWai6pNSdRvO2AnVHbjpuzwA6UYbY-V9lzxa3-YE
+  storage:
+    bucket: CV

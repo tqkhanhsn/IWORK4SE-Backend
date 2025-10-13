@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -13,6 +14,6 @@ import java.time.LocalDate;
 public class CVCreationResponse implements Serializable {
     private String id;
     private String url;
-    private LocalDate uploadedDate;
+    private LocalDateTime uploadedDate;
     private String applicantId;
 }

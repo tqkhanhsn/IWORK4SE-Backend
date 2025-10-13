@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -23,7 +24,7 @@ public class CV {
 
     @CreationTimestamp
     @Column(name = "uploaded_date")
-    private LocalDate uploadedDate;
+    private LocalDateTime uploadedDate;
 
     @ManyToOne
     @JoinColumn(name = "applicant_id", nullable = false)

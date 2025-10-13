@@ -49,6 +49,11 @@ public class AppConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/user/confirm-email/**").permitAll()
                         .requestMatchers("/auth/refresh-token/**").permitAll()
+                        .requestMatchers("/search/job-posts").permitAll()
+                        .requestMatchers("/job-category/").permitAll()
+                        .requestMatchers("/job-category/all").permitAll()
+
+
 //                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

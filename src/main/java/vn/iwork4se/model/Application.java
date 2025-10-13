@@ -40,6 +40,6 @@ public class Application {
     private LocalDateTime updateAt;
 
     @OneToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "cv_id")
     private CV cv;
 }

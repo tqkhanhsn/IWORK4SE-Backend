@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.iwork4se.controller.request.CVCreationRequest;
 import vn.iwork4se.controller.request.CVUpdateRequest;
 import vn.iwork4se.service.CVService;
@@ -28,13 +30,16 @@ import java.util.Map;
 public class CVController {
     private final CVService cvService;
 
-    @Operation(method = "POST", summary = "Upload CV", description = "Upload a new CV for an applicant")
-    @PostMapping(value = "/")
-    public ResponseEntity<Object> uploadCV(@Valid @RequestBody CVCreationRequest request) {
+    @Operation(method = "POST", summary = "Upload CV", description = "Upload a new CV file for an applicant to Supabase storage")
+    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> uploadCV(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("applicantId") String applicantId) {
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.CREATED.value());
         result.put("message", "CV uploaded successfully");
-        result.put("data", cvService.save(request));
+        result.put("data", cvService.uploadCV(file, applicantId));
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
@@ -65,7 +70,7 @@ public class CVController {
             @PathVariable String applicantId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "CVs retrieved successfully");
@@ -98,7 +103,7 @@ public class CVController {
     public ResponseEntity<Object> getCVsUsedInApplications(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "CVs used in applications retrieved successfully");
@@ -111,7 +116,7 @@ public class CVController {
     public ResponseEntity<Object> getRecentCVs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "Recent CVs retrieved successfully");
@@ -126,7 +131,7 @@ public class CVController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "CVs retrieved successfully");
@@ -142,7 +147,7 @@ public class CVController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "CVs retrieved successfully");
@@ -175,7 +180,7 @@ public class CVController {
     public ResponseEntity<Object> checkCVOwnership(
             @PathVariable String cvId,
             @RequestParam String applicantId) {
-        
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "Ownership check completed");
