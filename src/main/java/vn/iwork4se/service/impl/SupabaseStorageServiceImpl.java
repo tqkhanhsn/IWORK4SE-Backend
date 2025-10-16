@@ -53,6 +53,7 @@ public class SupabaseStorageServiceImpl implements SupabaseStorageService {
 
             supabaseWebClient.post()
                     .uri(uploadUrl)
+                    .header("Content-Disposition", "inline")
                     .contentType(MediaType.valueOf(file.getContentType()))
                     .bodyValue(file.getBytes())
                     .retrieve()

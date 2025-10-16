@@ -1,5 +1,5 @@
 package vn.iwork4se.common;
 
 public enum JobStatus {
-    PENDING, REjECTED, ACCEPTED, COMPLETED
+    PENDING, REJECTED, ACCEPTED, EXPIRED
 }

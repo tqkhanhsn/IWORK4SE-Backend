@@ -22,6 +22,9 @@ public class CV {
     @Column(nullable = false)
     private String url;
 
+    @Column
+    private String fileName;
+
     @CreationTimestamp
     @Column(name = "uploaded_date")
     private LocalDateTime uploadedDate;

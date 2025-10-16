@@ -12,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface CVService {
-    CVCreationResponse uploadCV(MultipartFile file, String applicantId);
+    CVCreationResponse uploadCV(MultipartFile file, String applicantId, String fileName);
 
     // CRUD methods for CV entity
     CVCreationResponse save(CVCreationRequest request);

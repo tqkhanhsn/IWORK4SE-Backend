@@ -68,7 +68,7 @@ public class JobPostServiceImpl implements JobPostService {
         Employer employer = employerRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new RuntimeException("Employer not found"));
         jobPost.setEmployer(employer);
-        
+
         // Set category if provided 
         if (request.getCategoryId() != null && !request.getCategoryId().trim().isEmpty()) {
             try {
@@ -80,12 +80,12 @@ public class JobPostServiceImpl implements JobPostService {
                 throw new RuntimeException("Invalid category ID format: " + request.getCategoryId());
             }
         }
-        
+
         JobPost jpSave = jobPostRepository.save(jobPost);
 
         log.info("Job post has added successfully, userId={}", jobPost.getId());
 
-        return JobPostCreationResponse.builder() 
+        return JobPostCreationResponse.builder()
                 .id(jpSave.getId())
                 .title(jpSave.getTitle())
                 .description(jpSave.getDescription())
@@ -131,7 +131,7 @@ public class JobPostServiceImpl implements JobPostService {
         Employer employer = employerRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new RuntimeException("Employer not found"));
         jobPost.setEmployer(employer);
-        
+
         // Set category if provided
         if (request.getCategoryId() != null && !request.getCategoryId().trim().isEmpty()) {
             try {
@@ -145,7 +145,7 @@ public class JobPostServiceImpl implements JobPostService {
         } else {
             jobPost.setCategory(null); // Remove category if not provided
         }
-        
+
         jobPostRepository.save(jobPost);
 
         log.info("Job post has updated successfully, userId={}", jobPost.getId());
@@ -182,27 +182,27 @@ public class JobPostServiceImpl implements JobPostService {
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
             if (sortParams.length == 2) {
-                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ? 
-                    Sort.Direction.DESC : Sort.Direction.ASC;
+                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ?
+                        Sort.Direction.DESC : Sort.Direction.ASC;
                 sortObj = Sort.by(direction, sortParams[0]);
             }
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<JobPost> jobPostPage;
-        
+
         // Search by keyword if provided
         if (keyword != null && !keyword.trim().isEmpty()) {
             jobPostPage = jobPostRepository.findByKeyword(keyword.trim(), pageable);
         } else {
             jobPostPage = jobPostRepository.findAll(pageable);
         }
-        
+
         // Convert to response
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -220,7 +220,7 @@ public class JobPostServiceImpl implements JobPostService {
         JobPost jobPost = getJobPostById(id);
         return convertToJobPostResponse(jobPost);
     }
-    
+
     // Lấy job post by employer id
     // truyền vào data ví dụ : employerId=1, page=0, size=10.
     // employerId là id của employer
@@ -229,11 +229,11 @@ public class JobPostServiceImpl implements JobPostService {
     public JobPostPageResponse findJobPostsByEmployer(String employerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
         Page<JobPost> jobPostPage = jobPostRepository.findByEmployerId(employerId, pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -256,19 +256,19 @@ public class JobPostServiceImpl implements JobPostService {
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
             if (sortParams.length == 2) {
-                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ? 
-                    Sort.Direction.DESC : Sort.Direction.ASC;
+                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ?
+                        Sort.Direction.DESC : Sort.Direction.ASC;
                 sortObj = Sort.by(direction, sortParams[0]);
             }
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, sortObj);
         Page<JobPost> jobPostPage = jobPostRepository.findActiveJobPosts(JobStatus.ACCEPTED, LocalDate.now(), pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -287,11 +287,11 @@ public class JobPostServiceImpl implements JobPostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
         JobStatus jobStatus = JobStatus.valueOf(status.toUpperCase());
         Page<JobPost> jobPostPage = jobPostRepository.findByJobStatus(jobStatus, pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -310,11 +310,11 @@ public class JobPostServiceImpl implements JobPostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
         JobType type = JobType.valueOf(jobType.toUpperCase());
         Page<JobPost> jobPostPage = jobPostRepository.findByJobType(type, pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -332,11 +332,11 @@ public class JobPostServiceImpl implements JobPostService {
     public JobPostPageResponse findJobPostsByLocation(String location, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
         Page<JobPost> jobPostPage = jobPostRepository.findByLocationContainingIgnoreCase(location, pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -355,11 +355,11 @@ public class JobPostServiceImpl implements JobPostService {
     public JobPostPageResponse findJobPostsBySalaryRange(Double minSalary, Double maxSalary, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
         Page<JobPost> jobPostPage = jobPostRepository.findBySalaryRange(minSalary, maxSalary, pageable);
-        
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -374,14 +374,14 @@ public class JobPostServiceImpl implements JobPostService {
     // categoryId là id của category
     // page là trang hiện tại, size là số lượng item trên mỗi trang
     @Override
-    public JobPostPageResponse findJobPostsByCategory(Long categoryId, int page, int size) { 
+    public JobPostPageResponse findJobPostsByCategory(Long categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedDate"));
-        Page<JobPost> jobPostPage = jobPostRepository.findByCategoryId(categoryId, pageable); 
-        
+        Page<JobPost> jobPostPage = jobPostRepository.findByCategoryId(categoryId, pageable);
+
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -402,22 +402,22 @@ public class JobPostServiceImpl implements JobPostService {
     // sort là sắp xếp (tùy chọn)
     // page là trang hiện tại, size là số lượng item trên mỗi trang
     @Override
-    public JobPostPageResponse searchJobPostsWithMultipleCriteria(String keyword, String status, String jobType, 
-                                                                 String location, Double minSalary, Double maxSalary, 
-                                                                 String sort, int page, int size) {
+    public JobPostPageResponse searchJobPostsWithMultipleCriteria(String keyword, String status, String jobType,
+                                                                  String location, Double minSalary, Double maxSalary,
+                                                                  String sort, int page, int size) {
         // Create pageable with sorting
         Sort sortObj = Sort.by(Sort.Direction.DESC, "postedDate"); // Default sort by posted date
         if (sort != null && !sort.isEmpty()) {
             String[] sortParams = sort.split(",");
             if (sortParams.length == 2) {
-                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ? 
-                    Sort.Direction.DESC : Sort.Direction.ASC;
+                Sort.Direction direction = sortParams[1].equalsIgnoreCase("desc") ?
+                        Sort.Direction.DESC : Sort.Direction.ASC;
                 sortObj = Sort.by(direction, sortParams[0]);
             }
         }
-        
+
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        
+
         // Convert string parameters to enums if provided
         JobStatus jobStatus = null;
         if (status != null && !status.trim().isEmpty()) {
@@ -427,7 +427,7 @@ public class JobPostServiceImpl implements JobPostService {
                 throw new RuntimeException("Invalid job status: " + status);
             }
         }
-        
+
         JobType type = null;
         if (jobType != null && !jobType.trim().isEmpty()) {
             try {
@@ -436,16 +436,16 @@ public class JobPostServiceImpl implements JobPostService {
                 throw new RuntimeException("Invalid job type: " + jobType);
             }
         }
-        
+
         // Use the repository method for multiple criteria search
         Page<JobPost> jobPostPage = jobPostRepository.findByMultipleCriteria(
                 keyword, jobStatus, type, location, minSalary, maxSalary, pageable);
-        
+
         // Convert to response
         List<JobPostResponse> jobPostResponses = jobPostPage.getContent().stream()
                 .map(this::convertToJobPostResponse)
                 .collect(Collectors.toList());
-        
+
         return new JobPostPageResponse(
                 jobPostResponses,
                 jobPostPage.getNumber(),
@@ -477,7 +477,7 @@ public class JobPostServiceImpl implements JobPostService {
         jobPostRepository.save(jobPost);
         log.info("Job post status updated successfully, jobPostId={}, newStatus={}", id, status);
     }
-    
+
     // Helper method to convert JobPost entity to JobPostResponse
     // truyền vào data ví dụ : jobPost=JobPost(id=1, title=java, description=java, jobPosition=java, location=java, experience=java, minSalary=1000, maxSalary=2000, vacancies=10, jobStatus=ACCEPTED, jobType=FULL_TIME, updateAt=2025-01-01, employer=Employer(id=1, companyName=java), category=JobCategory(id=1, categoryName=java))
     // jobPost là job post cần chuyển đổi
@@ -504,6 +504,8 @@ public class JobPostServiceImpl implements JobPostService {
                 .updateAt(jobPost.getUpdateAt())
                 .employerId(jobPost.getEmployer() != null ? jobPost.getEmployer().getId() : null)
                 .employerName(jobPost.getEmployer() != null ? jobPost.getEmployer().getCompanyName() : null)
+                .companyName(jobPost.getEmployer() != null ? jobPost.getEmployer().getCompanyName() : null)
+                .logoUrl(jobPost.getEmployer() != null ? jobPost.getEmployer().getLogoUrl() : null)
                 .categoryId(jobPost.getCategory() != null ? jobPost.getCategory().getId().toString() : null)
                 .categoryName(jobPost.getCategory() != null ? jobPost.getCategory().getCategoryName() : null)
                 .build();

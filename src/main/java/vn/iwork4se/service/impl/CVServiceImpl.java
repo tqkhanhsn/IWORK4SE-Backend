@@ -36,18 +36,19 @@ public class CVServiceImpl implements CVService {
     private final SupabaseStorageService supabaseStorageService;
 
     @Override
-    public CVCreationResponse uploadCV(MultipartFile file, String applicantId) {
+    public CVCreationResponse uploadCV(MultipartFile file, String applicantId, String fileName) {
         // Validate applicant exists
         Applicant applicant = applicantRepository.findById(applicantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Applicant not found with id: " + applicantId));
 
-        // Upload file to Supabase Storage
+
         String fileUrl = supabaseStorageService.uploadFile(file, applicantId);
 
         // Create CV record with the file URL
         CV cv = CV.builder()
                 .id("CV" + UUID.randomUUID().toString())
                 .url(fileUrl)
+                .fileName(fileName)
                 .uploadedDate(LocalDateTime.now())
                 .applicant(applicant)
                 .build();

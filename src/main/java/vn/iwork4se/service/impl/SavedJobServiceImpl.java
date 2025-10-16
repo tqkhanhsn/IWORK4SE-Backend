@@ -7,6 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import vn.iwork4se.common.JobStatus;
+import vn.iwork4se.common.JobType;
 import vn.iwork4se.controller.request.SavedJobCreationRequest;
 import vn.iwork4se.controller.response.SavedJobCreationResponse;
 import vn.iwork4se.controller.response.SavedJobPageResponse;
@@ -216,6 +218,14 @@ public class SavedJobServiceImpl implements SavedJobService {
                 .jobLocation(savedJob.getJob().getLocation())
                 .companyName(savedJob.getJob().getEmployer() != null ? savedJob.getJob().getEmployer().getCompanyName() : null)
                 .savedDate(savedJob.getSavedDate())
+                .experience(savedJob.getJob().getExperience())
+                .minSalary(savedJob.getJob().getMinSalary())
+                .maxSalary(savedJob.getJob().getMaxSalary())
+                .postedDate(savedJob.getJob().getPostedDate())
+                .closingDate(savedJob.getJob().getClosingDate())
+                .vacancies(savedJob.getJob().getVacancies())
+                .jobType(savedJob.getJob().getJobType())
+                .logoUrl(savedJob.getJob().getEmployer().getLogoUrl())
                 .build();
     }
 }

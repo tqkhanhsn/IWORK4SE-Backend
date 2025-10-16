@@ -30,6 +30,8 @@ public class JobPostResponse implements Serializable {
     private LocalDateTime updateAt;
     private String employerId;
     private String employerName;
+    private String companyName;
+    private String logoUrl;
     private String categoryId;
     private String categoryName;
 }

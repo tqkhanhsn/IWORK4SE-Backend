@@ -65,7 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("Failed to store refresh token in Redis for user: {}, error: {}", request.getUsername(), e.getMessage());
         }
 
-        return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).role(user.getRole().getName()).userId(user.getId()).fullName(user.getLastName()+" "+user.getLastName()).email(user.getEmail()).phone(user.getPhone()).build();
+        return TokenResponse.builder().accessToken(accessToken).refreshToken(refreshToken).role(user.getRole().getName()).userId(user.getId()).fullName(user.getLastName()+" "+user.getFirstName()).email(user.getEmail()).phone(user.getPhone()).build();
     }
 
 

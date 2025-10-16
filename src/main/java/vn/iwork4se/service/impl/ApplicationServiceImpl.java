@@ -25,6 +25,7 @@ import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.service.ApplicationService;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -359,12 +360,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .jobId(application.getJob().getId())
                 .jobTitle(application.getJob().getTitle())
                 .jobPosition(application.getJob().getJobPosition())
+                .logoUrl(application.getJob().getEmployer().getLogoUrl())
                 .companyName(application.getJob().getEmployer() != null ? application.getJob().getEmployer().getCompanyName() : null)
+                .location(application.getJob().getEmployer().getLocation())
+                .minSalary(application.getJob().getMinSalary())
+                .maxSalary(application.getJob().getMaxSalary())
+                .closingDate(application.getJob().getClosingDate())
+                .appliedDate(application.getAppliedAt())
+                .status(application.getApplicationStatus())
+                .cvFileName(application.getCv() != null ? application.getCv().getFileName() : null)
                 .cvId(application.getCv() != null ? application.getCv().getId() : null)
                 .cvUrl(application.getCv() != null ? application.getCv().getUrl() : null)
-                .appliedAt(application.getAppliedAt())
-                .applicationStatus(application.getApplicationStatus())
                 .updateAt(application.getUpdateAt())
                 .build();
     }
+
 }

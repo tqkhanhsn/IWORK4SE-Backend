@@ -34,12 +34,13 @@ public class CVController {
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> uploadCV(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("applicantId") String applicantId) {
+            @RequestParam("applicantId") String applicantId,
+            @RequestParam("fileName") String fileName) {
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.CREATED.value());
         result.put("message", "CV uploaded successfully");
-        result.put("data", cvService.uploadCV(file, applicantId));
+        result.put("data", cvService.uploadCV(file, applicantId,fileName));
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
