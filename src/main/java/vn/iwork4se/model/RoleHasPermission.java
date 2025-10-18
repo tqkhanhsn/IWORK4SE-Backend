@@ -12,11 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tbl_role_has_permission")
+@ToString(exclude = {"role", "permission"})
+@EqualsAndHashCode(exclude = {"role", "permission"})
 public class RoleHasPermission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
 
     @Column(name = "create_at")
     private LocalDateTime createAt;

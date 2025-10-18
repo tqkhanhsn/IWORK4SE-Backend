@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import vn.iwork4se.common.JobStatus;
@@ -21,6 +23,8 @@ import java.util.Set;
 @Table(name = "tbl_job_post")
 @EntityListeners(JobPostIndexListener.class)
 @Data
+@EqualsAndHashCode(exclude = {"employer", "category", "applications", "savedByApplicants"})
+@ToString(exclude = {"employer", "category", "applications", "savedByApplicants"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

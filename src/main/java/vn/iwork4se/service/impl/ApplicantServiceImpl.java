@@ -62,6 +62,8 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicant.setYearsOfExperience(req.getYearsOfExperience());
         applicant.setCareerObjective(req.getCareerObjective());
         applicant.setUniversityName(req.getUniversityName());
+        applicant.setDegreeLevel(req.getDegreeLevel());
+        applicant.setGraduationYear(req.getGraduationYear());
         applicant.setGpa(req.getGpa());
         applicant.setMajor(req.getMajor());
 
@@ -94,7 +96,7 @@ public class ApplicantServiceImpl implements ApplicantService {
         }
 
         applicantRepository.save(applicant);
-        log.info("Updated applicant: {}", applicant);
+        log.info("Updated applicant: {}", applicant.getId());
 
 
     }
@@ -116,6 +118,8 @@ public class ApplicantServiceImpl implements ApplicantService {
                 .yearsOfExperience(applicant.getYearsOfExperience())
                 .careerObjective(applicant.getCareerObjective())
                 .universityName(applicant.getUniversityName())
+                .degreeLevel(applicant.getDegreeLevel())
+                .graduationYear(applicant.getGraduationYear())
                 .gpa(applicant.getGpa())
                 .major(applicant.getMajor())
                 .certificates(applicant.getCertificates().stream().map(cert -> CertificateResponse.builder()
@@ -129,11 +133,6 @@ public class ApplicantServiceImpl implements ApplicantService {
                         .build()).collect(Collectors.toList()))
                 .Skills(new ArrayList<>(applicant.getSkills()))
                 .build();
-
-
-
-
-
     }
 
     @Override
@@ -176,7 +175,7 @@ public class ApplicantServiceImpl implements ApplicantService {
         Applicant applicant = getApplicantById(id);
         applicant.setUserStatus(UserStatus.DELETED);
         userRepository.save(applicant);
-        log.info("Deleted user: {}", applicant);
+        log.info("Deleted user: {}", applicant.getId());
     }
 
     private Applicant getApplicantById(String id) {
@@ -197,6 +196,8 @@ public class ApplicantServiceImpl implements ApplicantService {
                         .yearsOfExperience(applicantEntity.getYearsOfExperience())
                         .careerObjective(applicantEntity.getCareerObjective())
                         .universityName(applicantEntity.getUniversityName())
+                        .degreeLevel(applicantEntity.getDegreeLevel())
+                        .graduationYear(applicantEntity.getGraduationYear())
                         .gpa(applicantEntity.getGpa())
                         .major(applicantEntity.getMajor())
                         .certificates(applicantEntity.getCertificates().stream().map(cert ->

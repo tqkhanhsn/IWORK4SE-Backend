@@ -3,6 +3,7 @@ package vn.iwork4se.controller.response;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.controller.request.CertificateRequest;
 
@@ -26,6 +27,8 @@ public class ApplicantResponse implements Serializable {
     private Integer yearsOfExperience;
     private String careerObjective;
     private String universityName;
+    private DegreeLevel degreeLevel;
+    private Integer graduationYear;
     private Double gpa;
     private String major;
     private List<CertificateResponse> certificates;

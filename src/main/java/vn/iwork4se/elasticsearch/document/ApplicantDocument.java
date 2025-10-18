@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Setting;
+import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 
@@ -70,6 +71,12 @@ public class ApplicantDocument {
     @Field(type = FieldType.Text, analyzer = "standard")
     private String universityName;
 
+    @Field(type = FieldType.Keyword)
+    private DegreeLevel degreeLevel;
+
+    @Field(type = FieldType.Integer)
+    private Integer graduationYear;
+
     @Field(type = FieldType.Double)
     private Double gpa;
 
@@ -91,6 +98,4 @@ public class ApplicantDocument {
 
     @Field(type = FieldType.Text, analyzer = "standard")
     private String searchableText;
-
-
 }

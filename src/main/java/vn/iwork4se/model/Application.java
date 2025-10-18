@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import vn.iwork4se.common.ApplicationStatus;
 
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "tbl_application")
 @Data
+@EqualsAndHashCode(exclude = {"job", "applicant", "cv"})
+@ToString(exclude = {"job", "applicant", "cv"})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

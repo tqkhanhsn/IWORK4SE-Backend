@@ -13,6 +13,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
+import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.common.Gender;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.elasticsearch.document.ApplicantDocument;
@@ -288,13 +289,12 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
         try {
             entityManager.setFlushMode(FlushModeType.COMMIT);
 
-            // Fetch applicant basic data
             String sql = """
                 SELECT DISTINCT 
                     u.id, u.first_name, u.last_name, u.email, u.phone, u.address, 
                     u.birthday, u.gender, u.user_status, u.create_at, u.update_at,
                     a.years_of_experience, a.career_objective, a.university_name, 
-                    a.gpa, a.major
+                    a.degree_level, a.graduation_year, a.gpa, a.major
                 FROM tbl_users u
                 INNER JOIN tbl_applicant a ON u.id = a.user_id
                 WHERE u.id = ?1
@@ -325,8 +325,10 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
             Integer yearsOfExperience = (Integer) row[11];
             String careerObjective = (String) row[12];
             String universityName = (String) row[13];
-            BigDecimal gpa = row[14] != null ? new BigDecimal(row[14].toString()) : null;
-            String major = (String) row[15];
+            String degreeLevelStr = (String) row[14];
+            Integer graduationYear = (Integer) row[15];
+            BigDecimal gpa = row[16] != null ? new BigDecimal(row[16].toString()) : null;
+            String major = (String) row[17];
 
             // Fetch skills separately
             List<String> skills = entityManager.createNativeQuery(
@@ -359,6 +361,7 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
             if (careerObjective != null) searchableText.append(careerObjective).append(" ");
             if (universityName != null) searchableText.append(universityName).append(" ");
             if (major != null) searchableText.append(major).append(" ");
+            if (degreeLevelStr != null) searchableText.append(degreeLevelStr).append(" ");
             if (skills != null && !skills.isEmpty()) {
                 searchableText.append(String.join(" ", skills)).append(" ");
             }
@@ -385,6 +388,8 @@ public class ApplicantSearchServiceImpl implements ApplicantSearchService {
                     .yearsOfExperience(yearsOfExperience)
                     .careerObjective(careerObjective)
                     .universityName(universityName)
+                    .degreeLevel(degreeLevelStr != null ? DegreeLevel.valueOf(degreeLevelStr) : null)
+                    .graduationYear(graduationYear)
                     .gpa(gpa != null ? gpa.doubleValue() : null)
                     .major(major)
                     .skills(new HashSet<>(skills))

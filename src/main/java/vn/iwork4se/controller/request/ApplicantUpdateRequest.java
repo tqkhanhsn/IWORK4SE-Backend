@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.common.Gender;
 
 import java.io.Serializable;
@@ -34,6 +35,8 @@ public class ApplicantUpdateRequest implements Serializable {
     private Integer yearsOfExperience;
     private String careerObjective;
     private String universityName;
+    private DegreeLevel degreeLevel;
+    private Integer graduationYear;
     private Double gpa;
     private String major;
     private List<CertificateRequest> certificates;

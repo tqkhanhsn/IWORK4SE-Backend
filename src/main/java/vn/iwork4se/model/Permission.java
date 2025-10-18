@@ -1,6 +1,5 @@
 package vn.iwork4se.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,6 +16,8 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "tbl_permission")
+@ToString(exclude = {"permissions"})
+@EqualsAndHashCode(exclude = {"permissions"})
 public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +29,8 @@ public class Permission {
     @Column(name = "category")
     private String category;
 
-
     @Column(name = "path")
     private String path;
-
 
     @Column(name = "description")
     private String description;

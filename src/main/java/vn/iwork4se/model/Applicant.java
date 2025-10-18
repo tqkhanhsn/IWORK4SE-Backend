@@ -2,8 +2,10 @@ package vn.iwork4se.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.elasticsearch.listener.ApplicantIndexListener;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,7 +13,8 @@ import java.util.Set;
 @Table(name = "tbl_applicant")
 @EntityListeners(ApplicantIndexListener.class)
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"certificates", "applications", "savedJobs", "cvs", "savedByEmployers", "savedInListIds"})
+@ToString(callSuper = true, exclude = {"certificates", "applications", "savedJobs", "cvs", "savedByEmployers", "savedInListIds"})
 @NoArgsConstructor
 @AllArgsConstructor
 @PrimaryKeyJoinColumn(name = "user_id")
@@ -24,6 +27,13 @@ public class Applicant extends User {
 
     @Column(name = "university_name")
     private String universityName;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private DegreeLevel degreeLevel;
+
+    @Column(name = "graduation_year")
+    private Integer graduationYear;
 
     private Double gpa;
 
