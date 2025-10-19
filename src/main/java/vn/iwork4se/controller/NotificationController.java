@@ -258,4 +258,37 @@ public class NotificationController {
         result.put("data", "");
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
+    @Operation(method = "PUT", summary = "Mark notification as read", description = "Mark a specific notification as read")
+    @PutMapping(value = "/{id}/mark-read")
+    public ResponseEntity<Object> markNotificationAsRead(@PathVariable String id) {
+        notificationService.markNotificationAsRead(id);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Notification marked as read successfully");
+        result.put("data", "");
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Operation(method = "PUT", summary = "Mark all notifications as read", description = "Mark all notifications for a user as read")
+    @PutMapping(value = "/user/{userId}/mark-all-read")
+    public ResponseEntity<Object> markAllNotificationsAsRead(@PathVariable String userId) {
+        notificationService.markAllNotificationsAsRead(userId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "All notifications marked as read successfully");
+        result.put("data", "");
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @Operation(method = "GET", summary = "Get unread notification count", description = "Get count of unread notifications for a user")
+    @GetMapping(value = "/user/{userId}/unread-count")
+    public ResponseEntity<Object> getUnreadNotificationCount(@PathVariable String userId) {
+        long count = notificationService.countUnreadNotificationsByUser(userId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Unread notification count retrieved successfully");
+        result.put("data", count);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 }

@@ -17,4 +17,5 @@ public class NotificationCreationResponse implements Serializable {
     private String type;
     private String message;
     private LocalDateTime createdAt;
+    private Boolean isRead;
 }

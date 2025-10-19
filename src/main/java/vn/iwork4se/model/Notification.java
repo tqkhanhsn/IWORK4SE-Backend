@@ -3,7 +3,6 @@ package vn.iwork4se.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.boot.actuate.autoconfigure.wavefront.WavefrontProperties;
 
 import java.time.LocalDateTime;
 
@@ -35,4 +34,8 @@ public class Notification {
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "is_read", nullable = false)
+    @Builder.Default
+    private Boolean isRead = false;
 }

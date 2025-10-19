@@ -63,6 +63,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(savedNotification.getType())
                 .message(savedNotification.getMessage())
                 .createdAt(savedNotification.getCreatedAt())
+                .isRead(savedNotification.getIsRead())
                 .build();
     }
 
@@ -296,6 +297,27 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("Old notifications deleted before date: {}", beforeDate);
     }
 
+    @Override
+    public void markNotificationAsRead(String id) {
+        Notification notification = getNotificationById(id);
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
+        log.info("Notification marked as read, notificationId={}", id);
+    }
+
+    @Override
+    public void markAllNotificationsAsRead(String userId) {
+        List<Notification> notifications = notificationRepository.findByUserId(userId, Pageable.unpaged()).getContent();
+        notifications.forEach(notification -> notification.setIsRead(true));
+        notificationRepository.saveAll(notifications);
+        log.info("All notifications marked as read for user, userId={}", userId);
+    }
+
+    @Override
+    public long countUnreadNotificationsByUser(String userId) {
+        return notificationRepository.countByUserIdAndIsRead(userId, false);
+    }
+
     private NotificationResponse convertToNotificationResponse(Notification notification) {
         return NotificationResponse.builder()
                 .id(notification.getId())
@@ -305,6 +327,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(notification.getType())
                 .message(notification.getMessage())
                 .createdAt(notification.getCreatedAt())
+                .isRead(notification.getIsRead())
                 .build();
     }
 }

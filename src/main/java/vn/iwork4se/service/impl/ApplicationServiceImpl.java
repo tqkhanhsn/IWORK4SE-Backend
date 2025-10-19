@@ -23,6 +23,7 @@ import vn.iwork4se.repository.ApplicationRepository;
 import vn.iwork4se.repository.CVRepository;
 import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.service.ApplicationService;
+import vn.iwork4se.service.NotificationService;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicantRepository applicantRepository;
     private final JobPostRepository jobPostRepository;
     private final CVRepository cvRepository;
+    private final NotificationService notificationService;
 
     @Override
     public ApplicationCreationResponse save(ApplicationCreationRequest request) {
@@ -76,6 +78,22 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Application savedApplication = applicationRepository.save(application);
         log.info("Application created successfully, applicationId={}", savedApplication.getId());
+
+        // Create notification for employer
+        try {
+            String employerId = jobPost.getEmployer().getId();
+            String message = String.format("Có ứng viên %s %s ứng tuyển vào vị trí '%s' của bạn", 
+                applicant.getFirstName(), applicant.getLastName(), jobPost.getTitle());
+            
+            notificationService.createApplicationStatusNotification(
+                employerId, 
+                savedApplication.getId(), 
+                message
+            );
+            log.info("Notification created for employer, employerId={}, applicationId={}", employerId, savedApplication.getId());
+        } catch (Exception e) {
+            log.error("Failed to create notification for employer: {}", e.getMessage());
+        }
 
         return ApplicationCreationResponse.builder()
                 .id(savedApplication.getId())

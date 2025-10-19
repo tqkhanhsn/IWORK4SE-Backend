@@ -48,6 +48,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
     // Count notifications by type
     long countByType(String type);
     
+    // Count notifications by user and read status
+    long countByUserIdAndIsRead(String userId, Boolean isRead);
+    
     // Find recent notifications for user (last 7 days)
     @Query("SELECT n FROM Notification n WHERE n.user.id = :userId AND n.createdAt >= :sevenDaysAgo ORDER BY n.createdAt DESC")
     List<Notification> findRecentNotificationsByUser(@Param("userId") String userId, 

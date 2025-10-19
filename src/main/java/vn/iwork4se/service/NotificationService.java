@@ -37,6 +37,11 @@ public interface NotificationService {
     NotificationCreationResponse createJobMatchNotification(String userId, String message);
     NotificationCreationResponse createSystemNotification(String userId, String message);
     
+    // Mark as read operations
+    void markNotificationAsRead(String id);
+    void markAllNotificationsAsRead(String userId);
+    long countUnreadNotificationsByUser(String userId);
+    
     // Bulk operations
     void deleteNotificationsByUser(String userId);
     void deleteOldNotifications(LocalDateTime beforeDate);
