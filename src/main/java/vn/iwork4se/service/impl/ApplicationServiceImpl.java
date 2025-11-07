@@ -2,6 +2,7 @@ package vn.iwork4se.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import vn.iwork4se.controller.request.ApplicationUpdateRequest;
 import vn.iwork4se.controller.response.ApplicationCreationResponse;
 import vn.iwork4se.controller.response.ApplicationPageResponse;
 import vn.iwork4se.controller.response.ApplicationResponse;
+import vn.iwork4se.event.ApplicationStatusChangedEvent;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
 import vn.iwork4se.model.Application;
@@ -41,20 +43,21 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicantRepository applicantRepository;
     private final JobPostRepository jobPostRepository;
     private final CVRepository cvRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public ApplicationCreationResponse save(ApplicationCreationRequest request) {
         // Check if applicant already applied for this job
         Optional<Application> existingApplication = applicationRepository.findByApplicantIdAndJobId(
                 request.getApplicantId(), request.getJobId());
-        
+
         if (existingApplication.isPresent()) {
             throw new RuntimeException("Applicant has already applied for this job");
         }
 
         Applicant applicant = applicantRepository.findById(request.getApplicantId())
                 .orElseThrow(() -> new RuntimeException("Applicant not found"));
-        
+
         JobPost jobPost = jobPostRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job post not found"));
 
@@ -90,17 +93,17 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void updateApplication(ApplicationUpdateRequest request) {
         Application application = getApplicationById(request.getId());
-        
+
         if (request.getCvId() != null) {
             CV cv = cvRepository.findById(request.getCvId())
                     .orElseThrow(() -> new RuntimeException("CV not found"));
             application.setCv(cv);
         }
-        
+
         if (request.getApplicationStatus() != null) {
             application.setApplicationStatus(request.getApplicationStatus());
         }
-        
+
         application.setUpdateAt(LocalDateTime.now());
         applicationRepository.save(application);
         log.info("Application updated successfully, applicationId={}", application.getId());
@@ -129,11 +132,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByApplicant(String applicantId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByApplicantId(applicantId, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -147,11 +150,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByJob(String jobId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByJobId(jobId, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -165,11 +168,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByStatus(ApplicationStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByApplicationStatus(status, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -183,11 +186,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByApplicantAndStatus(String applicantId, ApplicationStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByApplicantIdAndApplicationStatus(applicantId, status, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -201,11 +204,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByJobAndStatus(String jobId, ApplicationStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByJobIdAndApplicationStatus(jobId, status, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -219,11 +222,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByEmployer(String employerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByEmployerId(employerId, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -237,11 +240,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationPageResponse findApplicationsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByDateRange(startDate, endDate, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -256,11 +259,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findRecentApplications(thirtyDaysAgo, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -271,16 +274,16 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationPageResponse findApplicationsByMultipleCriteria(String applicantId, String jobId, ApplicationStatus status, 
-                                                                     LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
+    public ApplicationPageResponse findApplicationsByMultipleCriteria(String applicantId, String jobId, ApplicationStatus status,
+                                                                      LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
         Page<Application> applicationPage = applicationRepository.findByMultipleCriteria(
                 applicantId, jobId, status, startDate, endDate, pageable);
-        
+
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)
                 .collect(Collectors.toList());
-        
+
         return new ApplicationPageResponse(
                 applicationResponses,
                 applicationPage.getNumber(),
@@ -310,12 +313,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + application.getApplicationStatus() + " -> " + status);
         }
 
+        ApplicationStatus oldStatus = application.getApplicationStatus();
         application.setApplicationStatus(status);
         application.setUpdateAt(LocalDateTime.now());
-        applicationRepository.save(application);
+        Application updatedApplication = applicationRepository.save(application);
+
+        eventPublisher.publishEvent(new ApplicationStatusChangedEvent(
+                this, updatedApplication, status, oldStatus
+        ));
+
         log.info("Application status updated successfully, applicationId={}, newStatus={}", id, status);
     }
-
 
     @Override
     public void approveApplication(String id) {

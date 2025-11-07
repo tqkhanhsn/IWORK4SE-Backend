@@ -27,8 +27,6 @@ import java.util.Map;
 @Validated
 public class ApplicantController {
     private final ApplicantService applicantService;
-
-
     @Operation(summary = "Update an applicant", description = "API to update an existing applicant in the system")
     @PutMapping("/update")
     public Map<String, Object> updateApplicant(@RequestBody @Valid ApplicantUpdateRequest request) {

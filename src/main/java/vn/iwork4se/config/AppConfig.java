@@ -54,6 +54,7 @@ public class AppConfig {
                         .requestMatchers("/job-category/").permitAll()
                         .requestMatchers("/job-category/all").permitAll()
                         .requestMatchers("/job-post/active").permitAll()
+                        .requestMatchers("/ws-message/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/job-post/**").permitAll()
 
 
