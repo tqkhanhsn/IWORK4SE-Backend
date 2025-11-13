@@ -38,7 +38,10 @@ public class AppConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfig.setAllowedOrigins(List.of("http://localhost:3000"));
+                    corsConfig.setAllowedOrigins(List.of("http://localhost:3000",
+                            "http://127.0.0.1:5500",
+                            "http://localhost:5500"));
+
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));
                     corsConfig.setExposedHeaders(List.of("Authorization", "Content-Type"));
@@ -60,7 +63,7 @@ public class AppConfig {
 
 //                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
-                .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -82,15 +85,16 @@ public class AppConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setPasswordEncoder(passwordEncoder());
         authProvider.setUserDetailsService(userServiceDetail.UserServiceDetail());
-        return  authProvider;
+        return authProvider;
 
     }
 
     @Bean
-    public AuthenticationManager authenticationManager (AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
 
     }
+
     // Khoi tao bean cho password encoder
     @Bean
     public PasswordEncoder passwordEncoder() {
