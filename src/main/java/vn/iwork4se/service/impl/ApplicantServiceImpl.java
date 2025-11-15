@@ -108,13 +108,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         log.info("Get employer detail by id: {}", id);
         Applicant applicant = getApplicantById(id);
         return ApplicantResponse.builder()
+                .id(applicant.getId())
                 .firstName(applicant.getFirstName())
                 .lastName(applicant.getLastName())
                 .email(applicant.getEmail())
+                .userName(applicant.getUsername())
                 .address(applicant.getAddress())
                 .birthday(applicant.getBirthday())
                 .phone(applicant.getPhone())
                 .gender(applicant.getGender())
+                .userStatus(applicant.getUserStatus())
+                .createdAt(applicant.getCreateAt())
+                .updatedAt(applicant.getUpdateAt())
                 .yearsOfExperience(applicant.getYearsOfExperience())
                 .careerObjective(applicant.getCareerObjective())
                 .universityName(applicant.getUniversityName())
@@ -178,6 +183,16 @@ public class ApplicantServiceImpl implements ApplicantService {
         log.info("Deleted user: {}", applicant.getId());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateApplicantStatus(String id, UserStatus status) {
+        log.info("Updating applicant status with id: {} to status: {}", id, status);
+        Applicant applicant = getApplicantById(id);
+        applicant.setUserStatus(status);
+        userRepository.save(applicant);
+        log.info("Updated applicant status: {}", applicant.getId());
+    }
+
     private Applicant getApplicantById(String id) {
         return applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
@@ -186,13 +201,18 @@ public class ApplicantServiceImpl implements ApplicantService {
     private static ApplicantPageResponse getApplicantPageResponse(int page, int size, Page<Applicant> applicantEntities) {
         List<ApplicantResponse> applicantList = applicantEntities.stream().map(
                 applicantEntity -> ApplicantResponse.builder()
+                        .id(applicantEntity.getId())
                         .firstName(applicantEntity.getFirstName())
                         .lastName(applicantEntity.getLastName())
+                        .email(applicantEntity.getEmail())
+                        .userName(applicantEntity.getUsername())
                         .gender(applicantEntity.getGender())
                         .birthday(applicantEntity.getBirthday())
-                        .email(applicantEntity.getEmail())
                         .phone(applicantEntity.getPhone())
                         .address(applicantEntity.getAddress())
+                        .userStatus(applicantEntity.getUserStatus())
+                        .createdAt(applicantEntity.getCreateAt())
+                        .updatedAt(applicantEntity.getUpdateAt())
                         .yearsOfExperience(applicantEntity.getYearsOfExperience())
                         .careerObjective(applicantEntity.getCareerObjective())
                         .universityName(applicantEntity.getUniversityName())
@@ -212,7 +232,7 @@ public class ApplicantServiceImpl implements ApplicantService {
                                         .build()).collect(Collectors.toList()))
                         .Skills(new ArrayList<>(applicantEntity.getSkills()))
                         .build()
-        ).toList();
+        ).collect(Collectors.toList());
 
         ApplicantPageResponse applicantPageResponse = new ApplicantPageResponse();
         applicantPageResponse.setPageNumber(page);

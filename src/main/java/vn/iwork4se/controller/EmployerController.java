@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
+import vn.iwork4se.controller.request.UpdateUserStatusRequest;
 import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.service.EmployerService;
 
@@ -82,5 +84,18 @@ public class EmployerController {
         return result;
     }
 
+    @Operation(summary = "Update employer status", description = "API to update employer status by ID")
+    @PutMapping("/{id}/status")
+    public Map<String, Object> updateEmployerStatus(
+            @PathVariable String id,
+            @RequestBody @Valid UpdateUserStatusRequest request) {
+        log.info("Updating employer status with ID: {} to status: {}", id, request.getStatus());
+        employerService.updateEmployerStatus(id, request.getStatus());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Employer status has been successfully updated");
+        result.put("data", "");
+        return result;
+    }
 
 }

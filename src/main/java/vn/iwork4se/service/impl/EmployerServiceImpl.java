@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -68,13 +69,18 @@ public class EmployerServiceImpl implements EmployerService {
         log.info("Get employer detail by id: {}", id);
         Employer employer = getEmployerById(id);
         return EmployerResponse.builder()
+                .id(employer.getId())
                 .firstName(employer.getFirstName())
                 .lastName(employer.getLastName())
                 .email(employer.getEmail())
+                .userName(employer.getUsername())
                 .address(employer.getAddress())
                 .birthday(employer.getBirthday())
                 .phone(employer.getPhone())
                 .gender(employer.getGender())
+                .userStatus(employer.getUserStatus())
+                .createdAt(employer.getCreateAt())
+                .updatedAt(employer.getUpdateAt())
                 .companyName(employer.getCompanyName())
                 .location(employer.getLocation())
                 .industry(employer.getIndustry())
@@ -124,6 +130,16 @@ public class EmployerServiceImpl implements EmployerService {
         log.info("Deleted user: {}", employer);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateEmployerStatus(String id, UserStatus status) {
+        log.info("Updating employer status with id: {} to status: {}", id, status);
+        Employer employer = getEmployerById(id);
+        employer.setUserStatus(status);
+        userRepository.save(employer);
+        log.info("Updated employer status: {}", employer.getId());
+    }
+
     private Employer getEmployerById(String id) {
         return employerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
@@ -131,20 +147,25 @@ public class EmployerServiceImpl implements EmployerService {
     private static EmployerPageResponse getEmployerPageResponse(int page, int size, Page<Employer> employerEntities) {
         List<EmployerResponse> employerList = employerEntities.stream().map(
                 employerEntity -> EmployerResponse.builder()
+                        .id(employerEntity.getId())
                         .firstName(employerEntity.getFirstName())
                         .lastName(employerEntity.getLastName())
+                        .email(employerEntity.getEmail())
+                        .userName(employerEntity.getUsername())
                         .gender(employerEntity.getGender())
                         .birthday(employerEntity.getBirthday())
-                        .email(employerEntity.getEmail())
                         .phone(employerEntity.getPhone())
                         .address(employerEntity.getAddress())
+                        .userStatus(employerEntity.getUserStatus())
+                        .createdAt(employerEntity.getCreateAt())
+                        .updatedAt(employerEntity.getUpdateAt())
                         .companyName(employerEntity.getCompanyName())
                         .location(employerEntity.getLocation())
                         .industry(employerEntity.getIndustry())
                         .description(employerEntity.getDescription())
                         .logoUrl(employerEntity.getLogoUrl())
                         .build()
-        ).toList();
+        ).collect(Collectors.toList());
 
         EmployerPageResponse employerPageResponse = new EmployerPageResponse();
         employerPageResponse.setPageNumber(page);

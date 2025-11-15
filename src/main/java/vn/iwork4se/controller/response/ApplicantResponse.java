@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import vn.iwork4se.common.DegreeLevel;
 import vn.iwork4se.common.Gender;
+import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.CertificateRequest;
 
 import java.io.Serializable;
@@ -17,13 +18,18 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApplicantResponse implements Serializable {
+    private String id;
     private String firstName;
     private String lastName;
     private String email;
+    private String userName;
     private String address;
     private LocalDate birthday;
     private String phone;
     private Gender gender;
+    private UserStatus userStatus;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
     private Integer yearsOfExperience;
     private String careerObjective;
     private String universityName;

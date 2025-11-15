@@ -1,5 +1,6 @@
 package vn.iwork4se.service;
 
+import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerPageResponse;
@@ -10,4 +11,5 @@ public interface EmployerService {
     EmployerResponse findEmployerById(String id);
     EmployerPageResponse findAllEmployers(String keyword, String sort, int page, int size);
     void deleteEmployerById(String id);
+    void updateEmployerStatus(String id, UserStatus status);
 }
