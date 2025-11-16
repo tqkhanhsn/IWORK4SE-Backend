@@ -10,20 +10,25 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import vn.iwork4se.common.UserType;
 import vn.iwork4se.controller.request.MessageCreationRequest;
 import vn.iwork4se.controller.response.ConversationResponse;
 import vn.iwork4se.controller.response.MessageResponse;
 import vn.iwork4se.model.User;
+import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.MessageService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/messages")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYER')")
 public class MessageController {
     private final MessageService messageService;
+    private final UserRepository userRepository;
 
     @PostMapping("/send")
     public ResponseEntity<MessageResponse> sendMessage(
@@ -130,5 +135,31 @@ public class MessageController {
         String userId = authenticatedUser.getId();
         messageService.deleteMessage(messageId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/admin-employer")
+    public ResponseEntity<List<Map<String, Object>>> getAdminAndEmployerUsers(
+            @RequestParam(required = false) String keyword) {
+        List<User> users;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            users = userRepository.findByUserTypesAndKeyword(UserType.ADMIN, UserType.EMPLOYER, keyword.trim());
+        } else {
+            users = userRepository.findByUserTypes(List.of(UserType.ADMIN, UserType.EMPLOYER));
+        }
+        
+        List<Map<String, Object>> userList = users.stream()
+                .map(user -> {
+                    Map<String, Object> userMap = new java.util.HashMap<>();
+                    userMap.put("id", user.getId());
+                    userMap.put("firstName", user.getFirstName());
+                    userMap.put("lastName", user.getLastName());
+                    userMap.put("email", user.getEmail());
+                    userMap.put("userType", user.getUserType());
+                    userMap.put("fullName", user.getFirstName() + " " + user.getLastName());
+                    return userMap;
+                })
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(userList);
     }
 }

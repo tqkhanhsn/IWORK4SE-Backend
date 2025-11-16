@@ -1,10 +1,13 @@
 package vn.iwork4se.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import vn.iwork4se.common.UserType;
 import vn.iwork4se.model.User;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
@@ -13,6 +16,13 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmail(String email);
     boolean existsByUserName(String userName);
 
+    @Query("SELECT u FROM User u WHERE u.userType = :userType")
+    List<User> findByUserType(@Param("userType") UserType userType);
 
+    @Query("SELECT u FROM User u WHERE u.userType IN :userTypes")
+    List<User> findByUserTypes(@Param("userTypes") List<UserType> userTypes);
+
+    @Query("SELECT u FROM User u WHERE (u.userType = :userType1 OR u.userType = :userType2) AND (u.firstName LIKE %:keyword% OR u.lastName LIKE %:keyword% OR u.email LIKE %:keyword%)")
+    List<User> findByUserTypesAndKeyword(@Param("userType1") UserType userType1, @Param("userType2") UserType userType2, @Param("keyword") String keyword);
 }
 
