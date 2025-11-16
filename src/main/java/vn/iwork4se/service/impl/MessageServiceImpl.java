@@ -230,7 +230,7 @@ public class MessageServiceImpl implements MessageService {
     public Page<ConversationResponse> getUserConversations(String userId, Pageable pageable) {
         log.debug("[MESSAGING] Fetching conversations for user: {}", userId);
         return conversationRepository.findConversationsByUser(userId, pageable)
-                .map(this::convertToConversationResponse);
+                .map(conv -> convertToConversationResponse(conv, userId));
     }
 
     @Override
@@ -239,7 +239,7 @@ public class MessageServiceImpl implements MessageService {
         log.debug("[MESSAGING] Fetching active conversations for user: {}", userId);
         return conversationRepository.findActiveConversationsByUser(userId)
                 .stream()
-                .map(this::convertToConversationResponse)
+                .map(conv -> convertToConversationResponse(conv, userId))
                 .collect(Collectors.toList());
     }
 
@@ -301,7 +301,10 @@ public class MessageServiceImpl implements MessageService {
                 .build();
     }
 
-    private ConversationResponse convertToConversationResponse(Conversation conversation) {
+    private ConversationResponse convertToConversationResponse(Conversation conversation, String currentUserId) {
+        // Calculate unread count for the current user (only messages where current user is the receiver and isRead = false)
+        int unreadCount = messageRepository.findUnreadMessagesByConversation(conversation.getId(), currentUserId).size();
+        
         return ConversationResponse.builder()
                 .id(conversation.getId())
                 .user1Id(conversation.getUser1().getId())
@@ -309,7 +312,7 @@ public class MessageServiceImpl implements MessageService {
                 .user2Id(conversation.getUser2().getId())
                 .user2Name(conversation.getUser2().getFirstName() + " " + conversation.getUser2().getLastName())
                 .lastMessageTime(conversation.getUpdatedAt())
-                .unreadCount(messageRepository.findUnreadMessagesByConversation(conversation.getId(), conversation.getUser1().getId()).size())
+                .unreadCount(unreadCount)
                 .isActive(conversation.getIsActive())
                 .build();
     }
