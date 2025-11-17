@@ -6,12 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
-import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
@@ -19,13 +17,10 @@ import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
-import vn.iwork4se.service.EmailService;
 import vn.iwork4se.service.EmployerService;
-
-import java.io.IOException;
+import vn.iwork4se.service.NotificationService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,8 +32,7 @@ public class EmployerServiceImpl implements EmployerService {
 
     private final EmployerRepository employerRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -135,9 +129,16 @@ public class EmployerServiceImpl implements EmployerService {
     public void updateEmployerStatus(String id, UserStatus status) {
         log.info("Updating employer status with id: {} to status: {}", id, status);
         Employer employer = getEmployerById(id);
+        UserStatus oldStatus = employer.getUserStatus();
         employer.setUserStatus(status);
         userRepository.save(employer);
         log.info("Updated employer status: {}", employer.getId());
+
+        if (oldStatus != status) {
+            String message = String.format("Trạng thái tài khoản của bạn được cập nhật từ %s sang %s.",
+                    translateUserStatus(oldStatus), translateUserStatus(status));
+            notificationService.createUserStatusNotification(employer.getId(), message);
+        }
     }
 
     private Employer getEmployerById(String id) {
@@ -174,5 +175,17 @@ public class EmployerServiceImpl implements EmployerService {
         employerPageResponse.setTotalElements(employerEntities.getTotalElements());
         employerPageResponse.setEmployers(employerList);
         return employerPageResponse;
+    }
+
+    private String translateUserStatus(UserStatus status) {
+        if (status == null) {
+            return "Không xác định";
+        }
+        return switch (status) {
+            case ACTIVE -> "Đang hoạt động";
+            case INACTIVE -> "Tạm khóa";
+            case BANNED -> "Bị cấm";
+            case DELETED -> "Đã xóa";
+        };
     }
 }

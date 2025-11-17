@@ -3,7 +3,6 @@ package vn.iwork4se.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.boot.actuate.autoconfigure.wavefront.WavefrontProperties;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +24,14 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "application_id")
     private Application application;
+
+    @ManyToOne
+    @JoinColumn(name = "job_post_id")
+    private JobPost jobPost;
+
+    @Column(name = "is_read", nullable = false)
+    @Builder.Default
+    private boolean isRead = false;
 
     @Column(nullable = false)
     private String type;

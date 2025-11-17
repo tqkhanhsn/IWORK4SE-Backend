@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
-import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.response.*;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
@@ -20,14 +19,10 @@ import vn.iwork4se.repository.ApplicantRepository;
 import vn.iwork4se.repository.CertificateRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.ApplicantService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import vn.iwork4se.service.EmailService;
+import vn.iwork4se.service.NotificationService;
 
-import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,9 +34,8 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     private final ApplicantRepository applicantRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final CertificateRepository certificateRepository;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -188,9 +182,16 @@ public class ApplicantServiceImpl implements ApplicantService {
     public void updateApplicantStatus(String id, UserStatus status) {
         log.info("Updating applicant status with id: {} to status: {}", id, status);
         Applicant applicant = getApplicantById(id);
+        UserStatus oldStatus = applicant.getUserStatus();
         applicant.setUserStatus(status);
         userRepository.save(applicant);
         log.info("Updated applicant status: {}", applicant.getId());
+
+        if (oldStatus != status) {
+            String message = String.format("Trạng thái tài khoản của bạn được cập nhật từ %s sang %s.",
+                    translateUserStatus(oldStatus), translateUserStatus(status));
+            notificationService.createUserStatusNotification(applicant.getId(), message);
+        }
     }
 
     private Applicant getApplicantById(String id) {
@@ -241,6 +242,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantPageResponse.setTotalElements(applicantEntities.getTotalElements());
         applicantPageResponse.setApplicants(applicantList);
         return applicantPageResponse;
+    }
+
+    private String translateUserStatus(UserStatus status) {
+        if (status == null) {
+            return "Không xác định";
+        }
+        return switch (status) {
+            case ACTIVE -> "Đang hoạt động";
+            case INACTIVE -> "Tạm khóa";
+            case BANNED -> "Bị cấm";
+            case DELETED -> "Đã xóa";
+        };
     }
 
 

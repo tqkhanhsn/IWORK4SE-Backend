@@ -15,6 +15,8 @@ public class NotificationCreationRequest implements Serializable {
 
     private String applicationId; // Optional - related application
 
+    private String jobPostId; // Optional - related job post
+
     @NotBlank(message = "notification type must not be blank")
     private String type;
 
