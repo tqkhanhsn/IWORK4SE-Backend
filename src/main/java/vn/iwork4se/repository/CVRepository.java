@@ -41,11 +41,11 @@ public interface CVRepository extends JpaRepository<CV, String> {
     List<CV> findLatestCVByApplicant(@Param("applicantId") String applicantId, Pageable pageable);
     
     // Find CVs used in applications
-    @Query("SELECT cv FROM CV cv WHERE cv.application IS NOT NULL")
+    @Query("SELECT cv FROM CV cv WHERE size(cv.applications) > 0")
     Page<CV> findCVsUsedInApplications(Pageable pageable);
     
     // Find unused CVs by applicant
-    @Query("SELECT cv FROM CV cv WHERE cv.applicant.id = :applicantId AND cv.application IS NULL")
+    @Query("SELECT cv FROM CV cv WHERE cv.applicant.id = :applicantId AND size(cv.applications) = 0")
     List<CV> findUnusedCVsByApplicant(@Param("applicantId") String applicantId);
     
     // Find recent CVs (last 30 days)

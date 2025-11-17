@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import vn.iwork4se.common.MessageType;
+import vn.iwork4se.common.UserType;
 import vn.iwork4se.controller.request.MessageCreationRequest;
 import vn.iwork4se.controller.response.ConversationResponse;
 import vn.iwork4se.controller.response.MessageResponse;
@@ -45,17 +46,44 @@ public class MessageServiceImpl implements MessageService {
         User receiver = userRepository.findById(request.getReceiverId())
                 .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
 
-        Conversation conversation = conversationRepository
-                .findConversationBetweenUsers(senderId, request.getReceiverId())
-                .orElseGet(() -> {
-                    log.debug("[MESSAGING] Creating new conversation between {} and {}", senderId, request.getReceiverId());
-                    Conversation newConversation = Conversation.builder()
-                            .user1(sender)
-                            .user2(receiver)
-                            .isActive(true)
-                            .build();
-                    return conversationRepository.save(newConversation);
-                });
+        // Validate roles: Only ADMIN and EMPLOYER can send/receive messages
+        if (sender.getUserType() != UserType.ADMIN && sender.getUserType() != UserType.EMPLOYER) {
+            log.warn("[MESSAGING] Unauthorized sender role: {} for user: {}", sender.getUserType(), senderId);
+            throw new RuntimeException("Only ADMIN and EMPLOYER can send messages");
+        }
+        if (receiver.getUserType() != UserType.ADMIN && receiver.getUserType() != UserType.EMPLOYER) {
+            log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), request.getReceiverId());
+            throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
+        }
+
+        // Find active conversation between users
+        List<Conversation> activeConversations = conversationRepository
+                .findActiveConversationsBetweenUsers(senderId, request.getReceiverId());
+        
+        Conversation conversation;
+        if (!activeConversations.isEmpty()) {
+            // Use the most recent active conversation
+            conversation = activeConversations.get(0);
+            log.debug("[MESSAGING] Using existing active conversation {} between {} and {}", 
+                    conversation.getId(), senderId, request.getReceiverId());
+        } else {
+            // Deactivate all old conversations between these users
+            List<Conversation> allConversations = conversationRepository
+                    .findAllConversationsBetweenUsers(senderId, request.getReceiverId());
+            allConversations.forEach(oldConv -> {
+                oldConv.setIsActive(false);
+                conversationRepository.save(oldConv);
+            });
+            
+            // Create new active conversation
+            log.debug("[MESSAGING] Creating new conversation between {} and {}", senderId, request.getReceiverId());
+            conversation = Conversation.builder()
+                    .user1(sender)
+                    .user2(receiver)
+                    .isActive(true)
+                    .build();
+            conversation = conversationRepository.save(conversation);
+        }
 
         Message message = Message.builder()
                 .conversation(conversation)
@@ -100,23 +128,50 @@ public class MessageServiceImpl implements MessageService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
 
+        // Validate roles: Only ADMIN and EMPLOYER can send/receive messages
+        if (sender.getUserType() != UserType.ADMIN && sender.getUserType() != UserType.EMPLOYER) {
+            log.warn("[MESSAGING] Unauthorized sender role: {} for user: {}", sender.getUserType(), senderId);
+            throw new RuntimeException("Only ADMIN and EMPLOYER can send messages");
+        }
+        if (receiver.getUserType() != UserType.ADMIN && receiver.getUserType() != UserType.EMPLOYER) {
+            log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), receiverId);
+            throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
+        }
+
         log.debug("[SUPABASE] Uploading image file: {} (size: {} bytes)",
                 imageFile.getOriginalFilename(), imageFile.getSize());
         String imageUrl = supabaseStorageService.uploadFile(imageFile, "messages/" + senderId);
         String filePath = "messages/" + senderId + "/" + imageFile.getOriginalFilename();
         log.info("[SUPABASE] Image uploaded successfully - URL: {}", imageUrl);
 
-        Conversation conversation = conversationRepository
-                .findConversationBetweenUsers(senderId, receiverId)
-                .orElseGet(() -> {
-                    log.debug("[MESSAGING] Creating new conversation for image message between {} and {}", senderId, receiverId);
-                    Conversation newConversation = Conversation.builder()
-                            .user1(sender)
-                            .user2(receiver)
-                            .isActive(true)
-                            .build();
-                    return conversationRepository.save(newConversation);
-                });
+        // Find active conversation between users
+        List<Conversation> activeConversations = conversationRepository
+                .findActiveConversationsBetweenUsers(senderId, receiverId);
+        
+        Conversation conversation;
+        if (!activeConversations.isEmpty()) {
+            // Use the most recent active conversation
+            conversation = activeConversations.get(0);
+            log.debug("[MESSAGING] Using existing active conversation {} for image message between {} and {}", 
+                    conversation.getId(), senderId, receiverId);
+        } else {
+            // Deactivate all old conversations between these users
+            List<Conversation> allConversations = conversationRepository
+                    .findAllConversationsBetweenUsers(senderId, receiverId);
+            allConversations.forEach(oldConv -> {
+                oldConv.setIsActive(false);
+                conversationRepository.save(oldConv);
+            });
+            
+            // Create new active conversation
+            log.debug("[MESSAGING] Creating new conversation for image message between {} and {}", senderId, receiverId);
+            conversation = Conversation.builder()
+                    .user1(sender)
+                    .user2(receiver)
+                    .isActive(true)
+                    .build();
+            conversation = conversationRepository.save(conversation);
+        }
 
         Message message = Message.builder()
                 .conversation(conversation)
@@ -175,7 +230,7 @@ public class MessageServiceImpl implements MessageService {
     public Page<ConversationResponse> getUserConversations(String userId, Pageable pageable) {
         log.debug("[MESSAGING] Fetching conversations for user: {}", userId);
         return conversationRepository.findConversationsByUser(userId, pageable)
-                .map(this::convertToConversationResponse);
+                .map(conv -> convertToConversationResponse(conv, userId));
     }
 
     @Override
@@ -184,7 +239,7 @@ public class MessageServiceImpl implements MessageService {
         log.debug("[MESSAGING] Fetching active conversations for user: {}", userId);
         return conversationRepository.findActiveConversationsByUser(userId)
                 .stream()
-                .map(this::convertToConversationResponse)
+                .map(conv -> convertToConversationResponse(conv, userId))
                 .collect(Collectors.toList());
     }
 
@@ -246,7 +301,10 @@ public class MessageServiceImpl implements MessageService {
                 .build();
     }
 
-    private ConversationResponse convertToConversationResponse(Conversation conversation) {
+    private ConversationResponse convertToConversationResponse(Conversation conversation, String currentUserId) {
+        // Calculate unread count for the current user (only messages where current user is the receiver and isRead = false)
+        int unreadCount = messageRepository.findUnreadMessagesByConversation(conversation.getId(), currentUserId).size();
+        
         return ConversationResponse.builder()
                 .id(conversation.getId())
                 .user1Id(conversation.getUser1().getId())
@@ -254,7 +312,7 @@ public class MessageServiceImpl implements MessageService {
                 .user2Id(conversation.getUser2().getId())
                 .user2Name(conversation.getUser2().getFirstName() + " " + conversation.getUser2().getLastName())
                 .lastMessageTime(conversation.getUpdatedAt())
-                .unreadCount(messageRepository.findUnreadMessagesByConversation(conversation.getId(), conversation.getUser1().getId()).size())
+                .unreadCount(unreadCount)
                 .isActive(conversation.getIsActive())
                 .build();
     }

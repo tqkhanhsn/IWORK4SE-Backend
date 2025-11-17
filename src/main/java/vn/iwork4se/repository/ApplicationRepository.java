@@ -43,6 +43,17 @@ public interface ApplicationRepository extends JpaRepository<Application, String
     // Find applications by employer (through job post)
     @Query("SELECT a FROM Application a WHERE a.job.employer.id = :employerId")
     Page<Application> findByEmployerId(@Param("employerId") String employerId, Pageable pageable);
+
+    // Find applications by employer with optional status filter
+    @Query("""
+            SELECT a FROM Application a
+            WHERE a.job.employer.id = :employerId
+            AND (:status IS NULL OR a.applicationStatus = :status)
+            """)
+    Page<Application> findByEmployerIdAndStatus(
+            @Param("employerId") String employerId,
+            @Param("status") ApplicationStatus status,
+            Pageable pageable);
     
     // Count applications by applicant
     long countByApplicantId(String applicantId);

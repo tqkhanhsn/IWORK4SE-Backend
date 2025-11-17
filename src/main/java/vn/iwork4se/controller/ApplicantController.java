@@ -10,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
+import vn.iwork4se.controller.request.UpdateUserStatusRequest;
 import vn.iwork4se.controller.response.ApplicantResponse;
 import vn.iwork4se.service.ApplicantService;
 
@@ -80,7 +82,19 @@ public class ApplicantController {
         return result;
     }
 
-
+    @Operation(summary = "Update applicant status", description = "API to update applicant status by ID")
+    @PutMapping("/{id}/status")
+    public Map<String, Object> updateApplicantStatus(
+            @PathVariable String id,
+            @RequestBody @Valid UpdateUserStatusRequest request) {
+        log.info("Updating applicant status with ID: {} to status: {}", id, request.getStatus());
+        applicantService.updateApplicantStatus(id, request.getStatus());
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Applicant status has been successfully updated");
+        result.put("data", "");
+        return result;
+    }
 
 }
 

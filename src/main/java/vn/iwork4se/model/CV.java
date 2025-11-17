@@ -1,12 +1,14 @@
 package vn.iwork4se.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -33,6 +35,9 @@ public class CV {
     @JoinColumn(name = "applicant_id", nullable = false)
     private Applicant applicant;
 
-    @OneToOne(mappedBy = "cv")
-    private Application application;
+    @OneToMany(mappedBy = "cv", fetch = FetchType.LAZY)
+    @Builder.Default
+    @ToString.Exclude
+    @JsonIgnore
+    private List<Application> applications = new ArrayList<>();
 }

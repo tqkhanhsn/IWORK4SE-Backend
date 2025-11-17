@@ -15,6 +15,7 @@ import vn.iwork4se.controller.response.CVPageResponse;
 import vn.iwork4se.controller.response.CVResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
+import vn.iwork4se.model.Application;
 import vn.iwork4se.model.CV;
 import vn.iwork4se.repository.ApplicantRepository;
 import vn.iwork4se.repository.CVRepository;
@@ -287,14 +288,23 @@ public class CVServiceImpl implements CVService {
     }
 
     private CVResponse convertToCVResponse(CV cv) {
+        boolean usedInAnyApplication = cv.getApplications() != null && !cv.getApplications().isEmpty();
+        String latestApplicationId = usedInAnyApplication
+                ? cv.getApplications().stream()
+                .sorted((a, b) -> b.getAppliedAt().compareTo(a.getAppliedAt()))
+                .map(Application::getId)
+                .findFirst()
+                .orElse(null)
+                : null;
+
         return CVResponse.builder()
                 .id(cv.getId())
                 .url(cv.getUrl())
                 .uploadedDate(cv.getUploadedDate())
                 .applicantId(cv.getApplicant().getId())
                 .applicantName(cv.getApplicant().getFirstName() + " " + cv.getApplicant().getLastName())
-                .isUsedInApplication(cv.getApplication() != null)
-                .applicationId(cv.getApplication() != null ? cv.getApplication().getId() : null)
+                .isUsedInApplication(usedInAnyApplication)
+                .applicationId(latestApplicationId)
                 .build();
     }
 }

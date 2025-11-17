@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.ApplicantUpdateRequest;
-import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.response.*;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
@@ -20,14 +19,10 @@ import vn.iwork4se.repository.ApplicantRepository;
 import vn.iwork4se.repository.CertificateRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.ApplicantService;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import vn.iwork4se.service.EmailService;
+import vn.iwork4se.service.NotificationService;
 
-import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,9 +34,8 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     private final ApplicantRepository applicantRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final CertificateRepository certificateRepository;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -108,13 +102,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         log.info("Get employer detail by id: {}", id);
         Applicant applicant = getApplicantById(id);
         return ApplicantResponse.builder()
+                .id(applicant.getId())
                 .firstName(applicant.getFirstName())
                 .lastName(applicant.getLastName())
                 .email(applicant.getEmail())
+                .userName(applicant.getUsername())
                 .address(applicant.getAddress())
                 .birthday(applicant.getBirthday())
                 .phone(applicant.getPhone())
                 .gender(applicant.getGender())
+                .userStatus(applicant.getUserStatus())
+                .createdAt(applicant.getCreateAt())
+                .updatedAt(applicant.getUpdateAt())
                 .yearsOfExperience(applicant.getYearsOfExperience())
                 .careerObjective(applicant.getCareerObjective())
                 .universityName(applicant.getUniversityName())
@@ -178,6 +177,23 @@ public class ApplicantServiceImpl implements ApplicantService {
         log.info("Deleted user: {}", applicant.getId());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateApplicantStatus(String id, UserStatus status) {
+        log.info("Updating applicant status with id: {} to status: {}", id, status);
+        Applicant applicant = getApplicantById(id);
+        UserStatus oldStatus = applicant.getUserStatus();
+        applicant.setUserStatus(status);
+        userRepository.save(applicant);
+        log.info("Updated applicant status: {}", applicant.getId());
+
+        if (oldStatus != status) {
+            String message = String.format("Trạng thái tài khoản của bạn được cập nhật từ %s sang %s.",
+                    translateUserStatus(oldStatus), translateUserStatus(status));
+            notificationService.createUserStatusNotification(applicant.getId(), message);
+        }
+    }
+
     private Applicant getApplicantById(String id) {
         return applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
@@ -186,13 +202,18 @@ public class ApplicantServiceImpl implements ApplicantService {
     private static ApplicantPageResponse getApplicantPageResponse(int page, int size, Page<Applicant> applicantEntities) {
         List<ApplicantResponse> applicantList = applicantEntities.stream().map(
                 applicantEntity -> ApplicantResponse.builder()
+                        .id(applicantEntity.getId())
                         .firstName(applicantEntity.getFirstName())
                         .lastName(applicantEntity.getLastName())
+                        .email(applicantEntity.getEmail())
+                        .userName(applicantEntity.getUsername())
                         .gender(applicantEntity.getGender())
                         .birthday(applicantEntity.getBirthday())
-                        .email(applicantEntity.getEmail())
                         .phone(applicantEntity.getPhone())
                         .address(applicantEntity.getAddress())
+                        .userStatus(applicantEntity.getUserStatus())
+                        .createdAt(applicantEntity.getCreateAt())
+                        .updatedAt(applicantEntity.getUpdateAt())
                         .yearsOfExperience(applicantEntity.getYearsOfExperience())
                         .careerObjective(applicantEntity.getCareerObjective())
                         .universityName(applicantEntity.getUniversityName())
@@ -212,7 +233,7 @@ public class ApplicantServiceImpl implements ApplicantService {
                                         .build()).collect(Collectors.toList()))
                         .Skills(new ArrayList<>(applicantEntity.getSkills()))
                         .build()
-        ).toList();
+        ).collect(Collectors.toList());
 
         ApplicantPageResponse applicantPageResponse = new ApplicantPageResponse();
         applicantPageResponse.setPageNumber(page);
@@ -221,6 +242,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantPageResponse.setTotalElements(applicantEntities.getTotalElements());
         applicantPageResponse.setApplicants(applicantList);
         return applicantPageResponse;
+    }
+
+    private String translateUserStatus(UserStatus status) {
+        if (status == null) {
+            return "Không xác định";
+        }
+        return switch (status) {
+            case ACTIVE -> "Đang hoạt động";
+            case INACTIVE -> "Tạm khóa";
+            case BANNED -> "Bị cấm";
+            case DELETED -> "Đã xóa";
+        };
     }
 
 

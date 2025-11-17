@@ -43,7 +43,7 @@ public class Application {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cv_id")
     private CV cv;
 }

@@ -27,7 +27,6 @@ import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.service.ApplicationService;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -219,9 +218,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationPageResponse findApplicationsByEmployer(String employerId, int page, int size) {
+    public ApplicationPageResponse findApplicationsByEmployer(String employerId, ApplicationStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "appliedAt"));
-        Page<Application> applicationPage = applicationRepository.findByEmployerId(employerId, pageable);
+        Page<Application> applicationPage = status == null
+                ? applicationRepository.findByEmployerId(employerId, pageable)
+                : applicationRepository.findByEmployerIdAndStatus(employerId, status, pageable);
 
         List<ApplicationResponse> applicationResponses = applicationPage.getContent().stream()
                 .map(this::convertToApplicationResponse)

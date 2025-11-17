@@ -154,6 +154,20 @@ public class NotificationController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @Operation(method = "GET", summary = "Get notifications by job post", description = "Retrieve notifications related to a specific job post")
+    @GetMapping(value = "/job/{jobPostId}")
+    public ResponseEntity<Object> getNotificationsByJobPost(
+            @PathVariable String jobPostId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Notifications retrieved successfully");
+        result.put("data", notificationService.findNotificationsByJobPost(jobPostId, page, size));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @Operation(method = "GET", summary = "Get notifications by date range", description = "Retrieve notifications within a date range")
     @GetMapping(value = "/date-range")
     public ResponseEntity<Object> getNotificationsByDateRange(
@@ -191,6 +205,7 @@ public class NotificationController {
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String applicationId,
+            @RequestParam(required = false) String jobPostId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
@@ -200,7 +215,7 @@ public class NotificationController {
         result.put("status", HttpStatus.OK.value());
         result.put("message", "Notifications retrieved successfully");
         result.put("data", notificationService.findNotificationsByMultipleCriteria(
-                userId, type, applicationId, startDate, endDate, page, size));
+                userId, type, applicationId, jobPostId, startDate, endDate, page, size));
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

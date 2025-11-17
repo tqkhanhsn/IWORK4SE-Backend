@@ -6,12 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
-import vn.iwork4se.controller.request.ChangePasswordRequest;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
 import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
@@ -19,15 +17,13 @@ import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
-import vn.iwork4se.service.EmailService;
 import vn.iwork4se.service.EmployerService;
-
-import java.io.IOException;
+import vn.iwork4se.service.NotificationService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -36,8 +32,7 @@ public class EmployerServiceImpl implements EmployerService {
 
     private final EmployerRepository employerRepository;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -68,13 +63,18 @@ public class EmployerServiceImpl implements EmployerService {
         log.info("Get employer detail by id: {}", id);
         Employer employer = getEmployerById(id);
         return EmployerResponse.builder()
+                .id(employer.getId())
                 .firstName(employer.getFirstName())
                 .lastName(employer.getLastName())
                 .email(employer.getEmail())
+                .userName(employer.getUsername())
                 .address(employer.getAddress())
                 .birthday(employer.getBirthday())
                 .phone(employer.getPhone())
                 .gender(employer.getGender())
+                .userStatus(employer.getUserStatus())
+                .createdAt(employer.getCreateAt())
+                .updatedAt(employer.getUpdateAt())
                 .companyName(employer.getCompanyName())
                 .location(employer.getLocation())
                 .industry(employer.getIndustry())
@@ -124,6 +124,23 @@ public class EmployerServiceImpl implements EmployerService {
         log.info("Deleted user: {}", employer);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateEmployerStatus(String id, UserStatus status) {
+        log.info("Updating employer status with id: {} to status: {}", id, status);
+        Employer employer = getEmployerById(id);
+        UserStatus oldStatus = employer.getUserStatus();
+        employer.setUserStatus(status);
+        userRepository.save(employer);
+        log.info("Updated employer status: {}", employer.getId());
+
+        if (oldStatus != status) {
+            String message = String.format("Trạng thái tài khoản của bạn được cập nhật từ %s sang %s.",
+                    translateUserStatus(oldStatus), translateUserStatus(status));
+            notificationService.createUserStatusNotification(employer.getId(), message);
+        }
+    }
+
     private Employer getEmployerById(String id) {
         return employerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
@@ -131,20 +148,25 @@ public class EmployerServiceImpl implements EmployerService {
     private static EmployerPageResponse getEmployerPageResponse(int page, int size, Page<Employer> employerEntities) {
         List<EmployerResponse> employerList = employerEntities.stream().map(
                 employerEntity -> EmployerResponse.builder()
+                        .id(employerEntity.getId())
                         .firstName(employerEntity.getFirstName())
                         .lastName(employerEntity.getLastName())
+                        .email(employerEntity.getEmail())
+                        .userName(employerEntity.getUsername())
                         .gender(employerEntity.getGender())
                         .birthday(employerEntity.getBirthday())
-                        .email(employerEntity.getEmail())
                         .phone(employerEntity.getPhone())
                         .address(employerEntity.getAddress())
+                        .userStatus(employerEntity.getUserStatus())
+                        .createdAt(employerEntity.getCreateAt())
+                        .updatedAt(employerEntity.getUpdateAt())
                         .companyName(employerEntity.getCompanyName())
                         .location(employerEntity.getLocation())
                         .industry(employerEntity.getIndustry())
                         .description(employerEntity.getDescription())
                         .logoUrl(employerEntity.getLogoUrl())
                         .build()
-        ).toList();
+        ).collect(Collectors.toList());
 
         EmployerPageResponse employerPageResponse = new EmployerPageResponse();
         employerPageResponse.setPageNumber(page);
@@ -153,5 +175,17 @@ public class EmployerServiceImpl implements EmployerService {
         employerPageResponse.setTotalElements(employerEntities.getTotalElements());
         employerPageResponse.setEmployers(employerList);
         return employerPageResponse;
+    }
+
+    private String translateUserStatus(UserStatus status) {
+        if (status == null) {
+            return "Không xác định";
+        }
+        return switch (status) {
+            case ACTIVE -> "Đang hoạt động";
+            case INACTIVE -> "Tạm khóa";
+            case BANNED -> "Bị cấm";
+            case DELETED -> "Đã xóa";
+        };
     }
 }

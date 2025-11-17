@@ -28,6 +28,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
     
     // Find notifications by application ID
     Page<Notification> findByApplicationId(String applicationId, Pageable pageable);
+
+    // Find notifications by job post ID
+    Page<Notification> findByJobPostId(String jobPostId, Pageable pageable);
     
     // Find notifications by date range
     @Query("SELECT n FROM Notification n WHERE n.createdAt BETWEEN :startDate AND :endDate")
@@ -58,11 +61,13 @@ public interface NotificationRepository extends JpaRepository<Notification, Stri
            "(:userId IS NULL OR n.user.id = :userId) AND " +
            "(:type IS NULL OR n.type = :type) AND " +
            "(:applicationId IS NULL OR n.application.id = :applicationId) AND " +
+           "(:jobPostId IS NULL OR n.jobPost.id = :jobPostId) AND " +
            "(:startDate IS NULL OR n.createdAt >= :startDate) AND " +
            "(:endDate IS NULL OR n.createdAt <= :endDate)")
     Page<Notification> findByMultipleCriteria(@Param("userId") String userId,
                                             @Param("type") String type,
                                             @Param("applicationId") String applicationId,
+                                            @Param("jobPostId") String jobPostId,
                                             @Param("startDate") LocalDateTime startDate,
                                             @Param("endDate") LocalDateTime endDate,
                                             Pageable pageable);

@@ -93,12 +93,18 @@ public class ApplicationController {
     public ResponseEntity<Object> getApplicationsByEmployer(
             @PathVariable String employerId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status) {
+
+        ApplicationStatus applicationStatus = null;
+        if (status != null && !status.trim().isEmpty()) {
+            applicationStatus = ApplicationStatus.valueOf(status.toUpperCase());
+        }
+
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "Applications retrieved successfully");
-        result.put("data", applicationService.findApplicationsByEmployer(employerId, page, size));
+        result.put("data", applicationService.findApplicationsByEmployer(employerId, applicationStatus, page, size));
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

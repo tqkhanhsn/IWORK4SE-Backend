@@ -15,7 +15,9 @@ public class NotificationResponse implements Serializable {
     private String userId;
     private String userName;
     private String applicationId;
+    private String jobPostId;
     private String type;
     private String message;
+    private boolean isRead;
     private LocalDateTime createdAt;
 }

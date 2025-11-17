@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import vn.iwork4se.controller.request.NotificationCreationRequest;
 import vn.iwork4se.controller.response.NotificationCreationResponse;
@@ -13,15 +14,19 @@ import vn.iwork4se.controller.response.NotificationPageResponse;
 import vn.iwork4se.controller.response.NotificationResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Application;
+import vn.iwork4se.model.JobPost;
 import vn.iwork4se.model.Notification;
 import vn.iwork4se.model.User;
 import vn.iwork4se.repository.ApplicationRepository;
+import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.repository.NotificationRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.NotificationService;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,6 +37,8 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final JobPostRepository jobPostRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public NotificationCreationResponse save(NotificationCreationRequest request) {
@@ -44,10 +51,18 @@ public class NotificationServiceImpl implements NotificationService {
                     .orElseThrow(() -> new RuntimeException("Application not found"));
         }
 
+        JobPost jobPost = null;
+        if (request.getJobPostId() != null) {
+            jobPost = jobPostRepository.findById(request.getJobPostId())
+                    .orElseThrow(() -> new RuntimeException("Job post not found"));
+        }
+
         Notification notification = Notification.builder()
                 .id("NOT" + UUID.randomUUID().toString())
                 .user(user)
                 .application(application)
+                .jobPost(jobPost)
+                .isRead(false)
                 .type(request.getType())
                 .message(request.getMessage())
                 .createdAt(LocalDateTime.now())
@@ -56,14 +71,65 @@ public class NotificationServiceImpl implements NotificationService {
         Notification savedNotification = notificationRepository.save(notification);
         log.info("Notification created successfully, notificationId={}", savedNotification.getId());
 
+        // Send realtime notification via WebSocket
+        sendRealtimeNotification(savedNotification);
+
         return NotificationCreationResponse.builder()
                 .id(savedNotification.getId())
                 .userId(savedNotification.getUser().getId())
                 .applicationId(savedNotification.getApplication() != null ? savedNotification.getApplication().getId() : null)
+                .jobPostId(savedNotification.getJobPost() != null ? savedNotification.getJobPost().getId() : null)
                 .type(savedNotification.getType())
                 .message(savedNotification.getMessage())
+                .isRead(savedNotification.isRead())
                 .createdAt(savedNotification.getCreatedAt())
                 .build();
+    }
+
+    private void sendRealtimeNotification(Notification notification) {
+        try {
+            User user = notification.getUser();
+            String userId = user.getId();
+            String userType = user.getUserType().toString();
+
+            // Convert notification to response format
+            NotificationResponse notificationResponse = convertToNotificationResponse(notification);
+
+            // Create notification payload
+            Map<String, Object> notificationPayload = new HashMap<>();
+            notificationPayload.put("id", notificationResponse.getId());
+            notificationPayload.put("userId", notificationResponse.getUserId());
+            notificationPayload.put("userName", notificationResponse.getUserName());
+            notificationPayload.put("applicationId", notificationResponse.getApplicationId());
+            notificationPayload.put("jobPostId", notificationResponse.getJobPostId());
+            notificationPayload.put("type", notificationResponse.getType());
+            notificationPayload.put("message", notificationResponse.getMessage());
+            notificationPayload.put("isRead", notificationResponse.isRead());
+            notificationPayload.put("createdAt", notificationResponse.getCreatedAt().toString());
+            notificationPayload.put("timestamp", System.currentTimeMillis());
+
+            // Determine topic based on user type
+            String topic;
+            if ("APPLICANT".equals(userType)) {
+                topic = "/topic/notifications/applicant/" + userId;
+            } else if ("EMPLOYER".equals(userType)) {
+                topic = "/topic/notifications/employer/" + userId;
+            } else if ("ADMIN".equals(userType)) {
+                topic = "/topic/notifications/admin/" + userId;
+            } else {
+                // Fallback to general notification topic
+                topic = "/topic/notifications/user/" + userId;
+            }
+
+            log.debug("[SOCKET] Broadcasting notification to topic: {}", topic);
+            messagingTemplate.convertAndSend(topic, notificationPayload);
+            log.info("[SOCKET] Notification {} sent successfully to user: {} via topic: {}", 
+                    notification.getId(), userId, topic);
+        } catch (Exception e) {
+            log.error("[SOCKET] Error sending realtime notification for notification: {}", 
+                    notification.getId(), e);
+            // Don't throw exception - notification is already saved to database
+        }
     }
 
     @Override
@@ -176,6 +242,24 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public NotificationPageResponse findNotificationsByJobPost(String jobPostId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Notification> notificationPage = notificationRepository.findByJobPostId(jobPostId, pageable);
+
+        List<NotificationResponse> notificationResponses = notificationPage.getContent().stream()
+                .map(this::convertToNotificationResponse)
+                .collect(Collectors.toList());
+
+        return new NotificationPageResponse(
+                notificationResponses,
+                notificationPage.getNumber(),
+                notificationPage.getSize(),
+                notificationPage.getTotalPages(),
+                notificationPage.getTotalElements()
+        );
+    }
+
+    @Override
     public NotificationPageResponse findNotificationsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> notificationPage = notificationRepository.findByDateRange(startDate, endDate, pageable);
@@ -212,11 +296,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationPageResponse findNotificationsByMultipleCriteria(String userId, String type, String applicationId, 
+    public NotificationPageResponse findNotificationsByMultipleCriteria(String userId, String type, String applicationId,
+                                                                       String jobPostId,
                                                                        LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> notificationPage = notificationRepository.findByMultipleCriteria(
-                userId, type, applicationId, startDate, endDate, pageable);
+                userId, type, applicationId, jobPostId, startDate, endDate, pageable);
         
         List<NotificationResponse> notificationResponses = notificationPage.getContent().stream()
                 .map(this::convertToNotificationResponse)
@@ -283,6 +368,27 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public NotificationCreationResponse createJobPostStatusNotification(String userId, String jobPostId, String message) {
+        NotificationCreationRequest request = NotificationCreationRequest.builder()
+                .userId(userId)
+                .jobPostId(jobPostId)
+                .type("JOB_POST_STATUS")
+                .message(message)
+                .build();
+        return save(request);
+    }
+
+    @Override
+    public NotificationCreationResponse createUserStatusNotification(String userId, String message) {
+        NotificationCreationRequest request = NotificationCreationRequest.builder()
+                .userId(userId)
+                .type("USER_STATUS")
+                .message(message)
+                .build();
+        return save(request);
+    }
+
+    @Override
     public void deleteNotificationsByUser(String userId) {
         List<Notification> notifications = notificationRepository.findByUserId(userId, Pageable.unpaged()).getContent();
         notificationRepository.deleteAll(notifications);
@@ -302,8 +408,10 @@ public class NotificationServiceImpl implements NotificationService {
                 .userId(notification.getUser().getId())
                 .userName(notification.getUser().getFirstName() + " " + notification.getUser().getLastName())
                 .applicationId(notification.getApplication() != null ? notification.getApplication().getId() : null)
+                .jobPostId(notification.getJobPost() != null ? notification.getJobPost().getId() : null)
                 .type(notification.getType())
                 .message(notification.getMessage())
+                .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .build();
     }

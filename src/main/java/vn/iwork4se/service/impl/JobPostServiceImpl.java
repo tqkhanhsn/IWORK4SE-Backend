@@ -22,6 +22,7 @@ import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.JobCategoryRepository;
 import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.service.JobPostService;
+import vn.iwork4se.service.NotificationService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class JobPostServiceImpl implements JobPostService {
     private final JobPostRepository jobPostRepository;
     private final EmployerRepository employerRepository;
     private final JobCategoryRepository jobCategoryRepository;
+    private final NotificationService notificationService;
     // CRUD methods for JobPost entity
 
     // Tạo job post
@@ -472,10 +474,25 @@ public class JobPostServiceImpl implements JobPostService {
     public void updateJobPostStatus(String id, String status) {
         JobPost jobPost = getJobPostById(id);
         JobStatus jobStatus = JobStatus.valueOf(status.toUpperCase());
+        JobStatus oldStatus = jobPost.getJobStatus();
         jobPost.setJobStatus(jobStatus);
         jobPost.setUpdateAt(LocalDateTime.now());
         jobPostRepository.save(jobPost);
         log.info("Job post status updated successfully, jobPostId={}, newStatus={}", id, status);
+
+        if (jobPost.getEmployer() != null) {
+            String message = String.format(
+                    "Tin tuyển dụng \"%s\" đã được cập nhật trạng thái từ %s sang %s.",
+                    jobPost.getTitle(),
+                    translateJobStatus(oldStatus),
+                    translateJobStatus(jobStatus)
+            );
+            notificationService.createJobPostStatusNotification(
+                    jobPost.getEmployer().getId(),
+                    jobPost.getId(),
+                    message
+            );
+        }
     }
 
     // Helper method to convert JobPost entity to JobPostResponse
@@ -509,6 +526,18 @@ public class JobPostServiceImpl implements JobPostService {
                 .categoryId(jobPost.getCategory() != null ? jobPost.getCategory().getId().toString() : null)
                 .categoryName(jobPost.getCategory() != null ? jobPost.getCategory().getCategoryName() : null)
                 .build();
+    }
+
+    private String translateJobStatus(JobStatus status) {
+        if (status == null) {
+            return "Không xác định";
+        }
+        return switch (status) {
+            case ACCEPTED -> "Đã duyệt";
+            case PENDING -> "Đang chờ duyệt";
+            case REJECTED -> "Bị từ chối";
+            case EXPIRED -> "Hết hạn";
+        };
     }
 
 }

@@ -24,7 +24,7 @@ public interface ApplicationService {
     ApplicationPageResponse findApplicationsByStatus(ApplicationStatus status, int page, int size);
     ApplicationPageResponse findApplicationsByApplicantAndStatus(String applicantId, ApplicationStatus status, int page, int size);
     ApplicationPageResponse findApplicationsByJobAndStatus(String jobId, ApplicationStatus status, int page, int size);
-    ApplicationPageResponse findApplicationsByEmployer(String employerId, int page, int size);
+    ApplicationPageResponse findApplicationsByEmployer(String employerId, ApplicationStatus status, int page, int size);
     ApplicationPageResponse findApplicationsByDateRange(LocalDateTime startDate, LocalDateTime endDate, int page, int size);
     ApplicationPageResponse findRecentApplications(int page, int size);
     ApplicationPageResponse findApplicationsByMultipleCriteria(String applicantId, String jobId, ApplicationStatus status, 
