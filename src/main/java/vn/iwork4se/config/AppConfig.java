@@ -50,6 +50,7 @@ public class AppConfig {
                 }))
                 .authorizeHttpRequests(request -> request.requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/user/sign-up").permitAll()
+                        .requestMatchers("/user/sign-up/employer").permitAll()
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/user/confirm-email/**").permitAll()
                         .requestMatchers("/auth/refresh-token/**").permitAll()

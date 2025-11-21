@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.common.UserType;
+import vn.iwork4se.controller.request.ApplicantCreationRequest;
 import vn.iwork4se.controller.request.ChangePasswordRequest;
+import vn.iwork4se.controller.request.EmployerCreationRequest;
 import vn.iwork4se.controller.request.SignInRequest;
 import vn.iwork4se.controller.request.UserCreationRequest;
 import vn.iwork4se.controller.response.EmailVerificationResponse;
@@ -116,6 +118,121 @@ public class UserServiceImpl implements UserService {
                 .email(savedUser.getEmail())
                 .userName(savedUser.getUsername())
                 .userType(req.getUserType())
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserCreationResponse createApplicant(ApplicantCreationRequest req) {
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        if (userRepository.existsByUserName(req.getUserName())) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        Applicant applicant = new Applicant();
+        applicant.setId("APP-" + UUID.randomUUID().toString());
+        applicant.setUserType(APPLICANT);
+
+        Role applicantRole = roleRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("Role Applicant not found"));
+        applicant.setRole(applicantRole);
+
+        applicant.setFirstName(req.getFirstName());
+        applicant.setLastName(req.getLastName());
+        applicant.setEmail(req.getEmail());
+        applicant.setUserName(req.getUserName());
+        applicant.setPassword(passwordEncoder.encode(req.getPassword()));
+        applicant.setUserStatus(UserStatus.INACTIVE);
+
+        Applicant savedApplicant = userRepository.save(applicant);
+
+        SignInRequest signInRequest = SignInRequest.builder()
+                .username(req.getUserName())
+                .password(req.getPassword())
+                .platform(req.getPlatform())
+                .deviceToken(req.getDeviceToken())
+                .versionApp(req.getVersionApp())
+                .build();
+
+        TokenResponse tokenResponse = authenticationService.getAccessToken(signInRequest);
+        try {
+            emailService.emailVerification(tokenResponse.getAccessToken(), req.getEmail(), req.getFirstName() + " " + req.getLastName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return UserCreationResponse.builder()
+                .id(savedApplicant.getId())
+                .firstName(savedApplicant.getFirstName())
+                .lastName(savedApplicant.getLastName())
+                .email(savedApplicant.getEmail())
+                .userName(savedApplicant.getUsername())
+                .userType(APPLICANT)
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserCreationResponse createEmployer(EmployerCreationRequest req) {
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new RuntimeException("Email already exists");
+        }
+
+        if (userRepository.existsByUserName(req.getUserName())) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        Employer employer = new Employer();
+        employer.setId("EMP-" + UUID.randomUUID().toString());
+        employer.setUserType(EMPLOYER);
+
+        Role employerRole = roleRepository.findById(3L)
+                .orElseThrow(() -> new RuntimeException("Role Employer not found"));
+        employer.setRole(employerRole);
+
+        employer.setFirstName(req.getFirstName());
+        employer.setLastName(req.getLastName());
+        employer.setEmail(req.getEmail());
+        employer.setUserName(req.getUserName());
+        employer.setPassword(passwordEncoder.encode(req.getPassword()));
+        employer.setUserStatus(UserStatus.INACTIVE);
+
+        employer.setPhone(req.getPhone());
+        employer.setCompanyName(req.getCompanyName());
+        employer.setIndustry(req.getIndustry());
+        employer.setLocation(req.getAddress());
+
+        Employer savedEmployer = userRepository.save(employer);
+
+        SignInRequest signInRequest = SignInRequest.builder()
+                .username(req.getUserName())
+                .password(req.getPassword())
+                .platform(req.getPlatform())
+                .deviceToken(req.getDeviceToken())
+                .versionApp(req.getVersionApp())
+                .build();
+
+        TokenResponse tokenResponse = authenticationService.getAccessToken(signInRequest);
+        try {
+            emailService.emailVerification(tokenResponse.getAccessToken(), req.getEmail(), req.getFirstName() + " " + req.getLastName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return UserCreationResponse.builder()
+                .id(savedEmployer.getId())
+                .firstName(savedEmployer.getFirstName())
+                .lastName(savedEmployer.getLastName())
+                .email(savedEmployer.getEmail())
+                .userName(savedEmployer.getUsername())
+                .userType(EMPLOYER)
                 .accessToken(tokenResponse.getAccessToken())
                 .refreshToken(tokenResponse.getRefreshToken())
                 .build();
