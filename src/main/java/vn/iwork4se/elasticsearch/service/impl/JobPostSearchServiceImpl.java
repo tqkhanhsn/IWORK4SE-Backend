@@ -124,23 +124,27 @@ public class JobPostSearchServiceImpl implements JobPostSearchService {
 
         // Salary range filter
         if (minSalary != null || maxSalary != null) {
-            filterQueries.add(Query.of(q -> q.range(r -> r
-                    .number(n -> {
-                        var builder = n.field("minSalary");
-                        if (minSalary != null) {
-                            builder = builder.gte(minSalary);
-                        }
-                        if (maxSalary != null) {
-                            builder = builder.lte(maxSalary);
-                        }
-                        return builder;
-                    })
-            )));
+            List<Query> salaryQueries = new ArrayList<>();
+            if (minSalary != null) {
+                salaryQueries.add(Query.of(q -> q.range(r -> r
+                        .number(n -> n.field("minSalary").gte(minSalary))
+                )));
+            }
+            if (maxSalary != null) {
+                salaryQueries.add(Query.of(q -> q.range(r -> r
+                        .number(n -> n.field("maxSalary").lte(maxSalary))
+                )));
+            }
+            filterQueries.addAll(salaryQueries);
         }
 
         // Experience filter
         if (experience != null && !experience.trim().isEmpty()) {
-            filterQueries.add(Query.of(q -> q.match(m -> m.field("experience").query(experience))));
+            filterQueries.add(Query.of(q -> q.match(m -> m
+                    .field("experience")
+                    .query(experience)
+                    .operator(Operator.And)
+            )));
         }
 
         // Category filter

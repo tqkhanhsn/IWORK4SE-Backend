@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
+import vn.iwork4se.controller.response.CompanyListResponse;
 import vn.iwork4se.controller.response.EmployerPageResponse;
 import vn.iwork4se.controller.response.EmployerResponse;
 import vn.iwork4se.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import vn.iwork4se.service.EmployerService;
 import vn.iwork4se.service.NotificationService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -139,6 +141,20 @@ public class EmployerServiceImpl implements EmployerService {
                     translateUserStatus(oldStatus), translateUserStatus(status));
             notificationService.createUserStatusNotification(employer.getId(), message);
         }
+    }
+
+    @Override
+    public List<CompanyListResponse> findDistinctCompanies() {
+        log.info("Getting list of distinct companies");
+        List<Map<String, Object>> companies = employerRepository.findDistinctCompanies();
+        return companies.stream()
+                .map(map -> CompanyListResponse.builder()
+                        .companyName((String) map.get("companyName"))
+                        .industry((String) map.get("industry"))
+                        .location((String) map.get("location"))
+                        .logoUrl((String) map.get("logoUrl"))
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private Employer getEmployerById(String id) {

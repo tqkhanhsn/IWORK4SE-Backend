@@ -8,6 +8,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.iwork4se.model.Employer;
 
+import java.util.List;
+import java.util.Map;
+
 @Repository
 public interface EmployerRepository extends JpaRepository<Employer, String> {
     @Query("SELECT e FROM Employer e WHERE e.userStatus = 'ACTIVE' AND (" +
@@ -38,4 +41,14 @@ public interface EmployerRepository extends JpaRepository<Employer, String> {
     Page<Employer> findByLocationAndIndustry(@Param("location") String location,
                                              @Param("industry") String industry,
                                              Pageable pageable);
+
+    @Query("SELECT DISTINCT new map(" +
+            "e.companyName as companyName, " +
+            "e.industry as industry, " +
+            "e.location as location, " +
+            "e.logoUrl as logoUrl) " +
+            "FROM Employer e " +
+            "WHERE e.userStatus = 'ACTIVE' AND e.companyName IS NOT NULL " +
+            "ORDER BY e.companyName ASC")
+    List<Map<String, Object>> findDistinctCompanies();
 }

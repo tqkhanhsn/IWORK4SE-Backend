@@ -98,4 +98,15 @@ public class EmployerController {
         return result;
     }
 
+    @Operation(summary = "Get distinct company list", description = "API to get list of distinct company names")
+    @GetMapping("/companies")
+    public Map<String, Object> getDistinctCompanies() {
+        log.info("Getting list of distinct companies");
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "List of distinct companies has been successfully retrieved");
+        result.put("data", employerService.findDistinctCompanies());
+        return result;
+    }
+
 }
