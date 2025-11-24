@@ -153,6 +153,7 @@ public class EmployerServiceImpl implements EmployerService {
                         .industry((String) map.get("industry"))
                         .location((String) map.get("location"))
                         .logoUrl((String) map.get("logoUrl"))
+                        .description((String) map.get("description"))
                         .build())
                 .collect(Collectors.toList());
     }

@@ -14,4 +14,5 @@ public class CompanyListResponse implements Serializable {
     private String industry;
     private String location;
     private String logoUrl;
+    private String description;
 }

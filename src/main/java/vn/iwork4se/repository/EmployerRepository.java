@@ -46,7 +46,8 @@ public interface EmployerRepository extends JpaRepository<Employer, String> {
             "e.companyName as companyName, " +
             "e.industry as industry, " +
             "e.location as location, " +
-            "e.logoUrl as logoUrl) " +
+            "e.logoUrl as logoUrl," +
+            "e.description as description) " +
             "FROM Employer e " +
             "WHERE e.userStatus = 'ACTIVE' AND e.companyName IS NOT NULL " +
             "ORDER BY e.companyName ASC")
