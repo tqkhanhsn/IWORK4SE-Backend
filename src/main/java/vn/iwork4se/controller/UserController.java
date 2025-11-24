@@ -57,7 +57,7 @@ public class UserController {
     @PatchMapping("/change-pwd")
     public Map<String, Object> changePassword(@RequestBody @Valid ChangePasswordRequest request) {
         log.info("Changing password for user with request: {}", request);
-        userService.changePasswordEmployer(request);
+        userService.changePassword(request);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.NO_CONTENT.value());
         result.put("message", "User password has been successfully changed");

@@ -11,6 +11,6 @@ public interface UserService {
     UserCreationResponse createUser(UserCreationRequest request);
     UserCreationResponse createApplicant(ApplicantCreationRequest request);
     UserCreationResponse createEmployer(EmployerCreationRequest request);
-    void changePasswordEmployer(ChangePasswordRequest req);
+    void changePassword(ChangePasswordRequest req);
     public boolean verifySecretCode(String secretCode,String email);
 }

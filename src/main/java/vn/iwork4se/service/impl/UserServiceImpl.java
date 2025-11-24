@@ -239,17 +239,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePasswordEmployer(ChangePasswordRequest req) {
+    public void changePassword(ChangePasswordRequest req) {
         log.info("Changing password for user: {}", req);
 
         User user = getUser(req.getId());
 
         if (!passwordEncoder.matches(req.getOldPassword(), user.getPassword())) {
-            throw new BadRequestException("Old password is incorrect");
+            throw new BadRequestException("Mật khẩu cũ không trùng khớp");
         }
 
         if (!req.getNewPassword().equals(req.getConfirmPassword())) {
-            throw new BadRequestException("Password and confirm password do not match");
+            throw new BadRequestException("Mật khẩu mới và xác nhận mật khẩu không khớp");
         }
 
         user.setPassword(passwordEncoder.encode(req.getNewPassword()));
