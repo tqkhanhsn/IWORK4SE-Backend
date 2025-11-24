@@ -11,11 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.controller.request.EmployerUpdateRequest;
-import vn.iwork4se.controller.response.CompanyListResponse;
-import vn.iwork4se.controller.response.EmployerPageResponse;
-import vn.iwork4se.controller.response.EmployerResponse;
+import vn.iwork4se.controller.response.*;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Employer;
+import vn.iwork4se.model.JobPost;
 import vn.iwork4se.repository.EmployerRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.EmployerService;
@@ -56,9 +55,6 @@ public class EmployerServiceImpl implements EmployerService {
         employerRepository.save(employer);
 
     }
-
-
-
 
     @Override
     public EmployerResponse findEmployerById(String id) {
@@ -158,10 +154,91 @@ public class EmployerServiceImpl implements EmployerService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public CompanyDetailResponse getCompanyDetailByName(String companyName) {
+        log.info("Getting company detail for company name: {}", companyName);
+
+        List<Employer> employers = employerRepository.findByCompanyNameExact(companyName);
+
+        if (employers.isEmpty()) {
+            throw new ResourceNotFoundException("Company not found with name: " + companyName);
+        }
+
+        // Get first employer to extract company information
+        Employer firstEmployer = employers.get(0);
+
+        // Build employer responses with their job posts
+        List<EmployerWithJobsResponse> employerWithJobsList = employers.stream()
+                .map(employer -> {
+                    List<JobPostResponse> jobPosts = employer.getJobPosts().stream()
+                            .map(this::mapJobPostToResponse)
+                            .collect(Collectors.toList());
+
+                    return EmployerWithJobsResponse.builder()
+                            .id(employer.getId())
+                            .firstName(employer.getFirstName())
+                            .lastName(employer.getLastName())
+                            .email(employer.getEmail())
+                            .phone(employer.getPhone())
+                            .companyName(employer.getCompanyName())
+                            .location(employer.getLocation())
+                            .industry(employer.getIndustry())
+                            .description(employer.getDescription())
+                            .logoUrl(employer.getLogoUrl())
+                            .userStatus(employer.getUserStatus())
+                            .jobPosts(jobPosts)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Calculate total job posts from all employers
+        int totalJobPosts = employerWithJobsList.stream()
+                .mapToInt(emp -> emp.getJobPosts().size())
+                .sum();
+
+        return CompanyDetailResponse.builder()
+                .companyName(firstEmployer.getCompanyName())
+                .industry(firstEmployer.getIndustry())
+                .location(firstEmployer.getLocation())
+                .logoUrl(firstEmployer.getLogoUrl())
+                .description(firstEmployer.getDescription())
+                .employers(employerWithJobsList)
+                .totalEmployers(employers.size())
+                .totalJobPosts(totalJobPosts)
+                .build();
+    }
+
+    private JobPostResponse mapJobPostToResponse(JobPost jobPost) {
+        return JobPostResponse.builder()
+                .id(jobPost.getId())
+                .title(jobPost.getTitle())
+                .description(jobPost.getDescription())
+                .jobPosition(jobPost.getJobPosition())
+                .location(jobPost.getLocation())
+                .experience(jobPost.getExperience())
+                .minSalary(jobPost.getMinSalary())
+                .maxSalary(jobPost.getMaxSalary())
+                .postedDate(jobPost.getPostedDate())
+                .closingDate(jobPost.getClosingDate())
+                .vacancies(jobPost.getVacancies())
+                .jobStatus(jobPost.getJobStatus())
+                .jobType(jobPost.getJobType())
+                .updateAt(jobPost.getUpdateAt())
+                .employerId(jobPost.getEmployer() != null ? jobPost.getEmployer().getId() : null)
+                .employerName(jobPost.getEmployer() != null ?
+                        jobPost.getEmployer().getFirstName() + " " + jobPost.getEmployer().getLastName() : null)
+                .companyName(jobPost.getEmployer() != null ? jobPost.getEmployer().getCompanyName() : null)
+                .logoUrl(jobPost.getEmployer() != null ? jobPost.getEmployer().getLogoUrl() : null)
+                .categoryId(jobPost.getCategory() != null ? jobPost.getCategory().getId().toString() : null)
+                .categoryName(jobPost.getCategory() != null ? jobPost.getCategory().getCategoryName() : null)
+                .build();
+    }
+
     private Employer getEmployerById(String id) {
         return employerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
     }
+
     private static EmployerPageResponse getEmployerPageResponse(int page, int size, Page<Employer> employerEntities) {
         List<EmployerResponse> employerList = employerEntities.stream().map(
                 employerEntity -> EmployerResponse.builder()

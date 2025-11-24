@@ -42,14 +42,18 @@ public interface EmployerRepository extends JpaRepository<Employer, String> {
                                              @Param("industry") String industry,
                                              Pageable pageable);
 
-    @Query("SELECT DISTINCT new map(" +
+    @Query("SELECT new map(" +
             "e.companyName as companyName, " +
             "e.industry as industry, " +
             "e.location as location, " +
-            "e.logoUrl as logoUrl," +
-            "e.description as description) " +
+            "MAX(e.logoUrl) as logoUrl, " +
+            "MAX(e.description) as description) " +
             "FROM Employer e " +
-            "WHERE e.userStatus = 'ACTIVE' AND e.companyName IS NOT NULL " +
+            "WHERE e.companyName IS NOT NULL " +
+            "GROUP BY e.companyName, e.industry, e.location " +
             "ORDER BY e.companyName ASC")
     List<Map<String, Object>> findDistinctCompanies();
+
+    @Query("SELECT e FROM Employer e WHERE e.userStatus = 'ACTIVE' AND lower(e.companyName) = lower(:companyName)")
+    List<Employer> findByCompanyNameExact(@Param("companyName") String companyName);
 }

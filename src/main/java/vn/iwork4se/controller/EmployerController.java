@@ -109,4 +109,15 @@ public class EmployerController {
         return result;
     }
 
+    @Operation(summary = "Get company detail by name", description = "API to get company details with all employers and their job posts by company name")
+    @GetMapping("/company-detail")
+    public Map<String, Object> getCompanyDetail(@RequestParam String companyName) {
+        log.info("Getting company detail for company name: {}", companyName);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value());
+        result.put("message", "Company detail has been successfully retrieved");
+        result.put("data", employerService.getCompanyDetailByName(companyName));
+        return result;
+    }
+
 }
