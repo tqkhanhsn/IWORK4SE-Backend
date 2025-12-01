@@ -65,7 +65,6 @@ public class JobPostDocument {
     @Field(type = FieldType.Date)
     private LocalDate updateAt;
 
-    // Employer information
     @Field(type = FieldType.Keyword)
     private String employerId;
 
@@ -76,15 +75,14 @@ public class JobPostDocument {
     private String companyName;
 
     @Field(type = FieldType.Keyword)
-    private String logoUrl; // Added logoUrl field from employer
+    private String logoUrl;
 
-    // Category information
     @Field(type = FieldType.Long)
     private Long categoryId;
 
     @Field(type = FieldType.Text, analyzer = "standard")
     private String categoryName;
 
-    @Field(type = FieldType.Text, analyzer = "standard")
+    @Field(type = FieldType.Text, analyzer = "job_search_analyzer")
     private String searchableText;
 }

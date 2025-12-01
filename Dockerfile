@@ -1,5 +1,5 @@
-FROM openjdk:17
+FROM eclipse-temurin:17-jdk-alpine
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} iwork4se-backend.jar
 ENTRYPOINT ["java","-jar","iwork4se-backend.jar"]
-EXPOSE 8081
+EXPOSE 8080

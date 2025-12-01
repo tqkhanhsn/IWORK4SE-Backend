@@ -1,8 +1,40 @@
 {
-  "analysis": {
-    "analyzer": {
-      "standard": {
-        "type": "standard"
+  "index": {
+    "analysis": {
+      "filter": {
+        "vietnamese_ascii_folding": {
+          "type": "asciifolding",
+          "preserve_original": true
+        },
+        "job_synonyms": {
+          "type": "synonym_graph",
+          "synonyms": [
+
+            "hcm, tphcm, ho chi minh, thanh pho ho chi minh, hồ chí minh, thành phố hồ chí minh, saigon, sai gon",
+            "hn, ha noi, hà nội",
+            "dn, da nang, đà nẵng",
+
+            "intern, internship, thuc tap, thực tập",
+            "fresher, mới tốt nghiệp, moi tot nghiep",
+            "junior, sơ cấp, so cap",
+            "senior, cao cấp, cao cap, leader, truong nhom",
+            "dev, developer, lap trinh vien, lập trình viên",
+
+            "it, information technology, cong nghe thong tin, công nghệ thông tin",
+            "ba, business analyst"
+          ]
+        }
+      },
+      "analyzer": {
+        "job_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "vietnamese_ascii_folding",
+            "job_synonyms"
+          ]
+        }
       }
     }
   }
