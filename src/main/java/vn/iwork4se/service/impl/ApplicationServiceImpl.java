@@ -26,6 +26,7 @@ import vn.iwork4se.repository.CVRepository;
 import vn.iwork4se.repository.JobPostRepository;
 import vn.iwork4se.service.ApplicationService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -57,8 +58,25 @@ public class ApplicationServiceImpl implements ApplicationService {
         Applicant applicant = applicantRepository.findById(request.getApplicantId())
                 .orElseThrow(() -> new RuntimeException("Applicant not found"));
 
+        // Kiểm tra trạng thái applicant - chỉ cho phép ACTIVE apply
+        if (applicant.getUserStatus() == null || applicant.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+            if (applicant.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+            }
+            throw new RuntimeException("Bạn không thể ứng tuyển với trạng thái tài khoản hiện tại");
+        }
+
         JobPost jobPost = jobPostRepository.findById(request.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job post not found"));
+
+        // Chỉ cho phép apply vào các job đã được duyệt và chưa hết hạn
+        if (jobPost.getJobStatus() == null || jobPost.getJobStatus() != vn.iwork4se.common.JobStatus.ACCEPTED) {
+            throw new RuntimeException("Cannot apply for a job that is not in ACCEPTED status");
+        }
+        LocalDate today = LocalDate.now();
+        if (jobPost.getClosingDate() != null && jobPost.getClosingDate().isBefore(today)) {
+            throw new RuntimeException("Cannot apply for an expired job");
+        }
 
         CV cv = null;
         if (request.getCvId() != null) {

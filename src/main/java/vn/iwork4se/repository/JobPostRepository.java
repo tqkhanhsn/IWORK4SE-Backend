@@ -81,4 +81,10 @@ public interface JobPostRepository extends JpaRepository<JobPost, String> {
     // Find job posts expiring soon (within next 7 days)
     @Query("SELECT jp FROM JobPost jp WHERE jp.closingDate BETWEEN :today AND :nextWeek")
     List<JobPost> findJobPostsExpiringSoon(@Param("today") LocalDate today, @Param("nextWeek") LocalDate nextWeek);
+
+    // Find job posts that should be marked as expired (closingDate < today and not already EXPIRED/DELETED)
+    @Query("SELECT jp FROM JobPost jp WHERE jp.closingDate < :today AND jp.jobStatus <> :expiredStatus AND jp.jobStatus <> :deletedStatus")
+    List<JobPost> findJobPostsToExpire(@Param("today") LocalDate today,
+                                       @Param("expiredStatus") JobStatus expiredStatus,
+                                       @Param("deletedStatus") JobStatus deletedStatus);
 }

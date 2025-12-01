@@ -13,4 +13,6 @@ public interface UserService {
     UserCreationResponse createEmployer(EmployerCreationRequest request);
     void changePasswordEmployer(ChangePasswordRequest req);
     public boolean verifySecretCode(String secretCode,String email);
+    void requestActivation(String userId);
+    void approveActivation(String userId);
 }

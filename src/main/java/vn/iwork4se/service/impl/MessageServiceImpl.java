@@ -55,6 +55,16 @@ public class MessageServiceImpl implements MessageService {
             log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), request.getReceiverId());
             throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
         }
+        
+        // Kiểm tra trạng thái sender nếu là EMPLOYER - chỉ cho phép ACTIVE chat
+        if (sender.getUserType() == UserType.EMPLOYER) {
+            if (sender.getUserStatus() == null || sender.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+                if (sender.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                    throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+                }
+                throw new RuntimeException("Bạn không thể gửi tin nhắn với trạng thái tài khoản hiện tại");
+            }
+        }
 
         // Find active conversation between users
         List<Conversation> activeConversations = conversationRepository
@@ -136,6 +146,16 @@ public class MessageServiceImpl implements MessageService {
         if (receiver.getUserType() != UserType.ADMIN && receiver.getUserType() != UserType.EMPLOYER) {
             log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), receiverId);
             throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
+        }
+        
+        // Kiểm tra trạng thái sender nếu là EMPLOYER - chỉ cho phép ACTIVE chat
+        if (sender.getUserType() == UserType.EMPLOYER) {
+            if (sender.getUserStatus() == null || sender.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+                if (sender.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                    throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+                }
+                throw new RuntimeException("Bạn không thể gửi tin nhắn với trạng thái tài khoản hiện tại");
+            }
         }
 
         log.debug("[SUPABASE] Uploading image file: {} (size: {} bytes)",

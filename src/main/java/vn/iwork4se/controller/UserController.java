@@ -83,4 +83,44 @@ public class UserController {
             response.sendRedirect("https://www.facebook.com/error");
         }
     }
+
+    @Operation(summary = "Request activation", description = "API for user to request account activation")
+    @PostMapping("/request-activation")
+    public ResponseEntity<Object> requestActivation(@RequestParam String userId) {
+        log.info("User {} requesting activation", userId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            userService.requestActivation(userId);
+            result.put("status", HttpStatus.OK.value());
+            result.put("message", "Yêu cầu kích hoạt tài khoản đã được gửi đến admin");
+            result.put("data", "");
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error requesting activation: {}", e.getMessage());
+            result.put("status", HttpStatus.BAD_REQUEST.value());
+            result.put("message", e.getMessage());
+            result.put("data", "");
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Operation(summary = "Approve activation", description = "API for admin to approve user activation request")
+    @PostMapping("/approve-activation")
+    public ResponseEntity<Object> approveActivation(@RequestParam String userId) {
+        log.info("Admin approving activation for user {}", userId);
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            userService.approveActivation(userId);
+            result.put("status", HttpStatus.OK.value());
+            result.put("message", "Tài khoản đã được kích hoạt thành công");
+            result.put("data", "");
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error approving activation: {}", e.getMessage());
+            result.put("status", HttpStatus.BAD_REQUEST.value());
+            result.put("message", e.getMessage());
+            result.put("data", "");
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+    }
 }

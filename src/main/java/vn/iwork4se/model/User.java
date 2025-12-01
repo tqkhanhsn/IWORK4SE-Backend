@@ -75,6 +75,11 @@ public class User implements UserDetails, Serializable {
     @Column(name = "update_at")
     private LocalDate updateAt;
 
+    @Column(name = "banned_date")
+    private LocalDate bannedDate;
+
+    @Column(name = "unbanned_date")
+    private LocalDate unbannedDate;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     private Set<Message> sentMessages = new HashSet<>();
