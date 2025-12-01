@@ -69,6 +69,15 @@ public class JobPostServiceImpl implements JobPostService {
         jobPost.setUpdateAt(LocalDateTime.now());
         Employer employer = employerRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new RuntimeException("Employer not found"));
+        
+        // Kiểm tra trạng thái employer - chỉ cho phép ACTIVE đăng tin
+        if (employer.getUserStatus() == null || employer.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+            if (employer.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+            }
+            throw new RuntimeException("Bạn không thể đăng tin tuyển dụng với trạng thái tài khoản hiện tại");
+        }
+        
         jobPost.setEmployer(employer);
 
         // Set category if provided 
@@ -132,6 +141,15 @@ public class JobPostServiceImpl implements JobPostService {
         jobPost.setUpdateAt(LocalDateTime.now());
         Employer employer = employerRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new RuntimeException("Employer not found"));
+        
+        // Kiểm tra trạng thái employer - chỉ cho phép ACTIVE chỉnh sửa tin
+        if (employer.getUserStatus() == null || employer.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+            if (employer.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+            }
+            throw new RuntimeException("Bạn không thể chỉnh sửa tin tuyển dụng với trạng thái tài khoản hiện tại");
+        }
+        
         jobPost.setEmployer(employer);
 
         // Set category if provided
@@ -159,8 +177,22 @@ public class JobPostServiceImpl implements JobPostService {
     @Override
     public void deleteJobPost(String id) {
         JobPost jobPost = getJobPostById(id);
-        jobPostRepository.delete(jobPost);
-        log.info("Job post has been deleted successfully, jobPostId={}", id);
+        
+        // Kiểm tra trạng thái employer - chỉ cho phép ACTIVE xóa tin
+        if (jobPost.getEmployer() != null) {
+            Employer employer = jobPost.getEmployer();
+            if (employer.getUserStatus() == null || employer.getUserStatus() != vn.iwork4se.common.UserStatus.ACTIVE) {
+                if (employer.getUserStatus() == vn.iwork4se.common.UserStatus.INACTIVE) {
+                    throw new RuntimeException("Tài khoản của bạn đang bị tạm khóa. Vui lòng kích hoạt tài khoản để tiếp tục sử dụng dịch vụ.");
+                }
+                throw new RuntimeException("Bạn không thể xóa tin tuyển dụng với trạng thái tài khoản hiện tại");
+            }
+        }
+        
+        jobPost.setJobStatus(JobStatus.DELETED);
+        jobPost.setUpdateAt(LocalDateTime.now());
+        jobPostRepository.save(jobPost);
+        log.info("Job post has been soft-deleted successfully (status set to DELETED), jobPostId={}", id);
     }
 
     // Lấy job post by id
@@ -537,6 +569,7 @@ public class JobPostServiceImpl implements JobPostService {
             case PENDING -> "Đang chờ duyệt";
             case REJECTED -> "Bị từ chối";
             case EXPIRED -> "Hết hạn";
+            case DELETED -> "Đã xóa";
         };
     }
 

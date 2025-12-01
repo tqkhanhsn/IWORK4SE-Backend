@@ -56,6 +56,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new AccessDeniedException(e.getMessage());
         }
         User user = userRepository.findByUserName(request.getUsername());
+        
+        // Kiểm tra trạng thái user trước khi cho phép đăng nhập
+        if (user.getUserStatus() == vn.iwork4se.common.UserStatus.BANNED) {
+            log.warn("User {} attempted to login but is BANNED. Unban date: {}", 
+                    request.getUsername(), user.getUnbannedDate());
+            throw new AccessDeniedException("Tài khoản của bạn đã bị khóa tạm thời trong 7 ngày. Ngày hết hạn: " + 
+                    (user.getUnbannedDate() != null ? user.getUnbannedDate().toString() : "N/A"));
+        }
+        
+        if (user.getUserStatus() == vn.iwork4se.common.UserStatus.DELETED) {
+            log.warn("User {} attempted to login but is DELETED", request.getUsername());
+            throw new AccessDeniedException("Tài khoản của bạn đã bị khóa vĩnh viễn");
+        }
+        
         String accessToken = jwtService.generateAccessToken(request.getUsername(),request.getPlatform(), authorities);
         String refreshToken = jwtService.generateRefreshToken(request.getUsername(),request.getPlatform(), authorities);
         try {

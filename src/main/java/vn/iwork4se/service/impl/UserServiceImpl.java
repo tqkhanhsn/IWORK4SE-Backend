@@ -29,10 +29,12 @@ import vn.iwork4se.repository.RoleRepository;
 import vn.iwork4se.repository.UserRepository;
 import vn.iwork4se.service.AuthenticationService;
 import vn.iwork4se.service.EmailService;
+import vn.iwork4se.service.NotificationService;
 import vn.iwork4se.service.UserService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final AuthenticationService authenticationService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -277,5 +280,53 @@ public class UserServiceImpl implements UserService {
     private User getUser(String id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: "));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void requestActivation(String userId) {
+        log.info("User {} requesting activation", userId);
+        User user = getUser(userId);
+        
+        // Chỉ cho phép user INACTIVE request activation
+        if (user.getUserStatus() != UserStatus.INACTIVE) {
+            throw new RuntimeException("Chỉ tài khoản đang tạm khóa mới có thể yêu cầu kích hoạt");
+        }
+        
+        // Lấy danh sách tất cả admin để gửi notification
+        List<User> admins = userRepository.findByUserType(UserType.ADMIN);
+        
+        String userFullName = user.getFirstName() + " " + user.getLastName();
+        String userTypeText = user.getUserType() == UserType.APPLICANT ? "Ứng viên" : "Nhà tuyển dụng";
+        String message = String.format("%s %s (ID: %s) đã yêu cầu kích hoạt tài khoản", 
+                userTypeText, userFullName, userId);
+        
+        // Gửi notification cho tất cả admin
+        for (User admin : admins) {
+            notificationService.createSystemNotification(admin.getId(), message);
+        }
+        
+        log.info("Activation request sent to {} admins for user {}", admins.size(), userId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void approveActivation(String userId) {
+        log.info("Approving activation for user {}", userId);
+        User user = getUser(userId);
+        
+        // Chỉ cho phép approve user INACTIVE
+        if (user.getUserStatus() != UserStatus.INACTIVE) {
+            throw new RuntimeException("Chỉ có thể kích hoạt tài khoản đang ở trạng thái tạm khóa");
+        }
+        
+        user.setUserStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+        
+        // Gửi notification cho user
+        String message = "Tài khoản của bạn đã được kích hoạt thành công. Bạn có thể sử dụng đầy đủ các chức năng của hệ thống.";
+        notificationService.createUserStatusNotification(userId, message);
+        
+        log.info("User {} has been activated successfully", userId);
     }
 }

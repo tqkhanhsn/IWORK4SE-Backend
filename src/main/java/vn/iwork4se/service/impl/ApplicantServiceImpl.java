@@ -184,6 +184,17 @@ public class ApplicantServiceImpl implements ApplicantService {
         Applicant applicant = getApplicantById(id);
         UserStatus oldStatus = applicant.getUserStatus();
         applicant.setUserStatus(status);
+        
+        // Nếu admin ban user, set bannedDate và unbannedDate (7 ngày sau)
+        if (status == UserStatus.BANNED && oldStatus != UserStatus.BANNED) {
+            applicant.setBannedDate(java.time.LocalDate.now());
+            applicant.setUnbannedDate(java.time.LocalDate.now().plusDays(7));
+        } else if (status != UserStatus.BANNED) {
+            // Nếu không phải BANNED, clear các trường ban
+            applicant.setBannedDate(null);
+            applicant.setUnbannedDate(null);
+        }
+        
         userRepository.save(applicant);
         log.info("Updated applicant status: {}", applicant.getId());
 

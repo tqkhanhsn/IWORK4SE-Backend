@@ -129,6 +129,17 @@ public class EmployerServiceImpl implements EmployerService {
         Employer employer = getEmployerById(id);
         UserStatus oldStatus = employer.getUserStatus();
         employer.setUserStatus(status);
+        
+        // Nếu admin ban user, set bannedDate và unbannedDate (7 ngày sau)
+        if (status == UserStatus.BANNED && oldStatus != UserStatus.BANNED) {
+            employer.setBannedDate(java.time.LocalDate.now());
+            employer.setUnbannedDate(java.time.LocalDate.now().plusDays(7));
+        } else if (status != UserStatus.BANNED) {
+            // Nếu không phải BANNED, clear các trường ban
+            employer.setBannedDate(null);
+            employer.setUnbannedDate(null);
+        }
+        
         userRepository.save(employer);
         log.info("Updated employer status: {}", employer.getId());
 
