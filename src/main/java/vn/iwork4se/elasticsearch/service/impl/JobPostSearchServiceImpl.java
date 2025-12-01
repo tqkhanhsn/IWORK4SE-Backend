@@ -392,6 +392,7 @@ public class JobPostSearchServiceImpl implements JobPostSearchService {
             if (employerLastName != null) searchableText.append(employerLastName).append(" ");
             if (companyName != null) searchableText.append(companyName).append(" ");
             if (categoryName != null) searchableText.append(categoryName).append(" ");
+            if (jobTypeStr != null) searchableText.append(jobTypeStr).append(" ");
 
             String employerName = null;
             if (employerFirstName != null && employerLastName != null) {
