@@ -48,7 +48,7 @@ spring:
   sendGrid:
     apiKey: "${SENDGRID_API_KEY}"
     fromEmail: 21096301.khanh@student.iuh.edu.vn
-    templateId: d-81068bbbc6324cb08b5543a41810e867
+    templateId: d-73075e7fe7bb4d88ab63489d0b92d751
     verificationLink: http://localhost:8080/user/confirm-email
 # application-dev.yml
 springdoc:

@@ -46,15 +46,7 @@ public class MessageServiceImpl implements MessageService {
         User receiver = userRepository.findById(request.getReceiverId())
                 .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
 
-        // Validate roles: Only ADMIN and EMPLOYER can send/receive messages
-        if (sender.getUserType() != UserType.ADMIN && sender.getUserType() != UserType.EMPLOYER) {
-            log.warn("[MESSAGING] Unauthorized sender role: {} for user: {}", sender.getUserType(), senderId);
-            throw new RuntimeException("Only ADMIN and EMPLOYER can send messages");
-        }
-        if (receiver.getUserType() != UserType.ADMIN && receiver.getUserType() != UserType.EMPLOYER) {
-            log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), request.getReceiverId());
-            throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
-        }
+
         
         // Kiểm tra trạng thái sender nếu là EMPLOYER - chỉ cho phép ACTIVE chat
         if (sender.getUserType() == UserType.EMPLOYER) {
@@ -138,15 +130,7 @@ public class MessageServiceImpl implements MessageService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Receiver not found"));
 
-        // Validate roles: Only ADMIN and EMPLOYER can send/receive messages
-        if (sender.getUserType() != UserType.ADMIN && sender.getUserType() != UserType.EMPLOYER) {
-            log.warn("[MESSAGING] Unauthorized sender role: {} for user: {}", sender.getUserType(), senderId);
-            throw new RuntimeException("Only ADMIN and EMPLOYER can send messages");
-        }
-        if (receiver.getUserType() != UserType.ADMIN && receiver.getUserType() != UserType.EMPLOYER) {
-            log.warn("[MESSAGING] Unauthorized receiver role: {} for user: {}", receiver.getUserType(), receiverId);
-            throw new RuntimeException("Only ADMIN and EMPLOYER can receive messages");
-        }
+
         
         // Kiểm tra trạng thái sender nếu là EMPLOYER - chỉ cho phép ACTIVE chat
         if (sender.getUserType() == UserType.EMPLOYER) {
