@@ -11,14 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.iwork4se.common.UserStatus;
 import vn.iwork4se.common.UserType;
-import vn.iwork4se.controller.request.ApplicantCreationRequest;
-import vn.iwork4se.controller.request.ChangePasswordRequest;
-import vn.iwork4se.controller.request.EmployerCreationRequest;
-import vn.iwork4se.controller.request.SignInRequest;
-import vn.iwork4se.controller.request.UserCreationRequest;
-import vn.iwork4se.controller.response.EmailVerificationResponse;
-import vn.iwork4se.controller.response.TokenResponse;
-import vn.iwork4se.controller.response.UserCreationResponse;
+import vn.iwork4se.controller.request.*;
+import vn.iwork4se.controller.response.*;
 import vn.iwork4se.exception.BadRequestException;
 import vn.iwork4se.exception.ResourceNotFoundException;
 import vn.iwork4se.model.Applicant;
@@ -37,6 +31,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static vn.iwork4se.common.UserType.*;
 
@@ -328,5 +323,121 @@ public class UserServiceImpl implements UserService {
         notificationService.createUserStatusNotification(userId, message);
         
         log.info("User {} has been activated successfully", userId);
+    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ForgotPasswordResponse forgotPassword(ForgotPasswordRequest request, String resetBaseUrl) {
+        log.info("Processing forgot password request for email: {}", request.getEmail());
+
+        User user = userRepository.findByEmail(request.getEmail());
+        if (user == null) {
+            return ForgotPasswordResponse.builder()
+                    .success(true)
+                    .message("Nếu email này tồn tại trong hệ thống, bạn sẽ nhận được email reset mật khẩu")
+                    .build();
+        }
+
+        try {
+            String token = UUID.randomUUID().toString() + "-" + System.currentTimeMillis();
+            String redisKey = "password_reset:" + token;
+            redisTemplate.opsForValue().set(redisKey, user.getId(), 24, TimeUnit.HOURS);
+            log.info("Generated reset token for user: {} and stored in Redis", user.getId());
+
+            String resetLink = resetBaseUrl + "?token=" + token;
+            String userName = user.getFirstName() + " " + user.getLastName();
+            emailService.sendForgotPasswordEmail(user.getEmail(), userName, resetLink);
+
+            return ForgotPasswordResponse.builder()
+                    .success(true)
+                    .message("Email reset mật khẩu đã được gửi")
+                    .build();
+        } catch (Exception e) {
+            log.error("Error sending forgot password email: {}", e.getMessage());
+            return ForgotPasswordResponse.builder()
+                    .success(false)
+                    .message("Lỗi khi gửi email reset mật khẩu")
+                    .build();
+        }
+    }
+
+    @Override
+    public VerifyResetTokenResponse verifyResetToken(String token) {
+        log.info("Verifying reset token");
+
+        try {
+            String redisKey = "password_reset:" + token;
+            String userId = (String) redisTemplate.opsForValue().get(redisKey);
+
+            if (userId == null) {
+                return VerifyResetTokenResponse.builder()
+                        .valid(false)
+                        .message("Token không hợp lệ hoặc đã hết hạn")
+                        .build();
+            }
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"));
+
+            return VerifyResetTokenResponse.builder()
+                    .valid(true)
+                    .email(user.getEmail())
+                    .message("Token hợp lệ")
+                    .build();
+        } catch (Exception e) {
+            log.error("Error verifying reset token: {}", e.getMessage());
+            return VerifyResetTokenResponse.builder()
+                    .valid(false)
+                    .message("Lỗi khi xác thực token")
+                    .build();
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ResetPasswordResponse resetPassword(ResetPasswordRequest request) {
+        log.info("Processing password reset request");
+
+        try {
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                throw new BadRequestException("Mật khẩu mới và xác nhận mật khẩu không khớp");
+            }
+
+            if (request.getNewPassword().length() < 6) {
+                throw new BadRequestException("Mật khẩu phải có ít nhất 6 ký tự");
+            }
+
+            String redisKey = "password_reset:" + request.getToken();
+            String userId = (String) redisTemplate.opsForValue().get(redisKey);
+
+            if (userId == null) {
+                throw new BadRequestException("Token không hợp lệ hoặc đã hết hạn");
+            }
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+
+            redisTemplate.delete(redisKey);
+            log.info("Password reset successful for user: {} and token deleted from Redis", user.getId());
+
+            return ResetPasswordResponse.builder()
+                    .success(true)
+                    .message("Mật khẩu đã được thay đổi thành công")
+                    .build();
+        } catch (BadRequestException | ResourceNotFoundException e) {
+            log.warn("Password reset failed: {}", e.getMessage());
+            return ResetPasswordResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build();
+        } catch (Exception e) {
+            log.error("Error during password reset: {}", e.getMessage());
+            return ResetPasswordResponse.builder()
+                    .success(false)
+                    .message("Lỗi khi đặt lại mật khẩu")
+                    .build();
+        }
     }
 }

@@ -35,6 +35,8 @@ public class EmailService {
     private String from;
     @Value ("${spring.sendGrid.templateId}")
     private String template;
+    @Value ("${spring.sendGrid.resetPwdTemplateId}")
+    private String resetPwdTemplate;
     @Value ("${spring.sendGrid.verificationLink}")
     private String verificationLink;
 
@@ -81,6 +83,43 @@ public class EmailService {
             log.info("Email sent successfully");
         } else {
             log.error("Email sent failed - statusCode={}, body={}", response.getStatusCode(), response.getBody());
+        }
+    }
+
+
+    public void sendForgotPasswordEmail(String email, String userName, String resetLink) throws IOException {
+        log.info("Sending forgot password email to: {}", email);
+
+        Email fromEmail = new Email(from, "iWork4SE");
+        Email toEmail = new Email(email);
+
+        Map<String, String> dynamicTemplateData = new HashMap<>();
+        dynamicTemplateData.put("user_name", userName);
+        dynamicTemplateData.put("reset_link", resetLink);
+        dynamicTemplateData.put("expiration_time", "24 giờ");
+
+        Mail mail = new Mail();
+        mail.setFrom(fromEmail);
+
+        Personalization personalization = new Personalization();
+        personalization.addTo(toEmail);
+
+        dynamicTemplateData.forEach(personalization::addDynamicTemplateData);
+        mail.addPersonalization(personalization);
+
+        mail.setTemplateId(resetPwdTemplate);
+
+        Request request = new Request();
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sendGrid.api(request);
+
+        if (response.getStatusCode() == 202) {
+            log.info("Forgot password email sent successfully to: {}", email);
+        } else {
+            log.error("Forgot password email send failed - statusCode={}, body={}", response.getStatusCode(), response.getBody());
         }
     }
 }
