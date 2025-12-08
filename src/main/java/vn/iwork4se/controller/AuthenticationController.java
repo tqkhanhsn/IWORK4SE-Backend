@@ -10,11 +10,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import vn.iwork4se.controller.request.ForgotPasswordRequest;
+import vn.iwork4se.controller.request.ResetPasswordRequest;
 import vn.iwork4se.controller.request.SignInRequest;
+import vn.iwork4se.controller.request.VerifyResetTokenRequest;
+import vn.iwork4se.controller.response.ForgotPasswordResponse;
+import vn.iwork4se.controller.response.ResetPasswordResponse;
 import vn.iwork4se.controller.response.TokenResponse;
+import vn.iwork4se.controller.response.VerifyResetTokenResponse;
 import vn.iwork4se.service.AuthenticationService;
 import vn.iwork4se.service.JwtService;
 import vn.iwork4se.service.RefreshTokenService;
+import vn.iwork4se.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -31,6 +39,9 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final UserService userService;
+    @Value("${app.reset-password-url:https://yourapp.com/reset-password}")
+    private String resetPasswordUrl;
 
 
     @Operation(summary = "Access token", description = "API to get access token")
@@ -111,6 +122,30 @@ public class AuthenticationController {
             // Sau khi logout toàn bộ thiết bị, điều hướng người dùng về trang chủ frontend
             response.sendRedirect("http://localhost:3000/");
         }
+    }
+
+    @Operation(summary = "Forgot Password", description = "API to request password reset - sends email with reset link")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        log.info("Forgot password request for email: {}", request.getEmail());
+        ForgotPasswordResponse response = userService.forgotPassword(request, resetPasswordUrl);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Verify Reset Token", description = "API to verify if reset token is valid")
+    @PostMapping("/verify-reset-token")
+    public ResponseEntity<VerifyResetTokenResponse> verifyResetToken(@RequestBody VerifyResetTokenRequest request) {
+        log.info("Verifying reset token");
+        VerifyResetTokenResponse response = userService.verifyResetToken(request.getToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Reset Password", description = "API to reset password using valid token")
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResetPasswordResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
+        log.info("Processing password reset with token");
+        ResetPasswordResponse response = userService.resetPassword(request);
+        return ResponseEntity.ok(response);
     }
 
 //    @Operation(summary = "Admin logout user", description = "API for admin to logout specific user")

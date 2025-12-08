@@ -49,6 +49,7 @@ spring:
     apiKey: "${SENDGRID_API_KEY}"
     fromEmail: 21096301.khanh@student.iuh.edu.vn
     templateId: d-73075e7fe7bb4d88ab63489d0b92d751
+    resetPwdTemplateId: d-d3597ecccd4d4267b792b7cc097bef14
     verificationLink: http://localhost:8080/user/confirm-email
 # application-dev.yml
 springdoc:
@@ -63,7 +64,7 @@ openapi:
     title: Iwork4se backend service
     version: 1.0.0
 jwt:
-  expiryMinutes: 30
+  expiryMinutes: 1440
   expiryDays: 7
   accessKey: "RCq2QWKOBB4vrCNdmlqYhfqpUK5SQeVNPOBZqX+awgE="
   refreshKey: "/OzKyt0P8FdZY995196f/QLB7aT2Ts8uSUvixqVjWKs="
@@ -77,3 +78,5 @@ zgemini:
   api:
     key: "${GEMINI_API_KEY}"
     model: gemini-2.5-flash
+app:
+  reset-password-url: http://localhost:3000/reset-password
