@@ -298,14 +298,27 @@ public class UserServiceImpl implements UserService {
         
         String userFullName = user.getFirstName() + " " + user.getLastName();
         String userTypeText = user.getUserType() == UserType.APPLICANT ? "Ứng viên" : "Nhà tuyển dụng";
-        String message = String.format("%s %s (ID: %s) đã yêu cầu kích hoạt tài khoản", 
+        String message = String.format("%s %s (ID: %s) đã yêu cầu kích hoạt tài khoản",
                 userTypeText, userFullName, userId);
         
         // Gửi notification cho tất cả admin
         for (User admin : admins) {
             notificationService.createSystemNotification(admin.getId(), message);
         }
-        
+
+        // Đồng thời gửi lại email kích hoạt tài khoản cho chính user
+        // Tạo một token ngẫu nhiên để dùng làm secret code
+        // Lưu ý: Không thể dùng access token vì user INACTIVE không thể đăng nhập
+        String token = UUID.randomUUID().toString();
+        try {
+            emailService.emailVerification(token, user.getEmail(), userFullName);
+            log.info("Resent activation email to user {} ({})", userId, user.getEmail());
+        } catch (IOException e) {
+            log.error("Failed to resend activation email to user {}: {}", userId, e.getMessage());
+            // Ném lỗi để frontend biết việc gửi email thất bại
+            throw new RuntimeException("Không thể gửi email kích hoạt. Vui lòng kiểm tra cấu hình email hoặc thử lại sau: " + e.getMessage());
+        }
+
         log.info("Activation request sent to {} admins for user {}", admins.size(), userId);
     }
 

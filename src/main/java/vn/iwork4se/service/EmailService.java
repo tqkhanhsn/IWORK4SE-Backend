@@ -78,9 +78,11 @@ public class EmailService {
         Response response = sendGrid.api(request);
 
         if (response.getStatusCode() == 202) {
-            log.info("Email sent successfully");
+            log.info("Email sent successfully to {}", to);
         } else {
-            log.error("Email sent failed - statusCode={}, body={}", response.getStatusCode(), response.getBody());
+            String errorMsg = String.format("Email sent failed - statusCode=%d, body=%s", response.getStatusCode(), response.getBody());
+            log.error(errorMsg);
+            throw new IOException(errorMsg);
         }
     }
 }

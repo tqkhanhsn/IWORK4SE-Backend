@@ -72,15 +72,19 @@ public class UserController {
         log.info("Confirming email verification for user with code: {}", secretCode);
         try {
             boolean valid = userService.verifySecretCode(email, secretCode);
-            if(valid){
-                response.sendRedirect("https://www.facebook.com/");
+            if (valid) {
+                // Sau khi người dùng xác thực email thành công,
+                // chuyển hướng tới trang thông báo kích hoạt thành công trên frontend
+                response.sendRedirect("http://localhost:3000/activation-success");
             } else {
-                response.sendRedirect("https://www.facebook.com/error");
+                // Mã xác thực không hợp lệ / hết hạn -> trang lỗi kích hoạt
+                response.sendRedirect("http://localhost:3000/activation-failed");
             }
 
-        }catch (Exception e) {
-            log.error("Confirm email was failure!, errorMessage+{}",e.getMessage());
-            response.sendRedirect("https://www.facebook.com/error");
+        } catch (Exception e) {
+            log.error("Confirm email was failure!, errorMessage+{}", e.getMessage());
+            // Bất kỳ lỗi nào cũng đưa về trang lỗi kích hoạt
+            response.sendRedirect("http://localhost:3000/activation-failed");
         }
     }
 

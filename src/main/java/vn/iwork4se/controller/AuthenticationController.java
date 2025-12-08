@@ -80,7 +80,8 @@ public class AuthenticationController {
             log.error("Error during logout: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Logout failed");
         }finally {
-            response.sendRedirect("https://www.facebook.com/");
+            // Sau khi logout, điều hướng người dùng về trang chủ frontend
+            response.sendRedirect("http://localhost:3000/");
         }
     }
 
@@ -107,7 +108,8 @@ public class AuthenticationController {
             log.error("Error during logout from all devices: {}", e.getMessage());
             return ResponseEntity.internalServerError().body("Logout from all devices failed");
         }finally {
-            response.sendRedirect("https://www.facebook.com/");
+            // Sau khi logout toàn bộ thiết bị, điều hướng người dùng về trang chủ frontend
+            response.sendRedirect("http://localhost:3000/");
         }
     }
 
