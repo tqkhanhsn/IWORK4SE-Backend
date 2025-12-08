@@ -10,18 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import vn.iwork4se.controller.request.ForgotPasswordRequest;
-import vn.iwork4se.controller.request.ResetPasswordRequest;
-import vn.iwork4se.controller.request.SignInRequest;
-import vn.iwork4se.controller.request.VerifyResetTokenRequest;
+import vn.iwork4se.controller.request.*;
 import vn.iwork4se.controller.response.ForgotPasswordResponse;
 import vn.iwork4se.controller.response.ResetPasswordResponse;
 import vn.iwork4se.controller.response.TokenResponse;
 import vn.iwork4se.controller.response.VerifyResetTokenResponse;
-import vn.iwork4se.service.AuthenticationService;
-import vn.iwork4se.service.JwtService;
-import vn.iwork4se.service.RefreshTokenService;
-import vn.iwork4se.service.UserService;
+import vn.iwork4se.service.*;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
@@ -37,9 +31,9 @@ import java.util.Map;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
+    private final GoogleOAuthService googleOAuthService;
     @Value("${app.reset-password-url:https://yourapp.com/reset-password}")
     private String resetPasswordUrl;
 
@@ -60,6 +54,31 @@ public class AuthenticationController {
     public TokenResponse getRefreshToken(@RequestParam String refreshToken) {
         log.info("Getting refresh token");
         return authenticationService.getRefreshToken(refreshToken);
+    }
+
+    @Operation(summary = "Google OAuth Login", description = "API to login with Google ID token")
+    @PostMapping("/login/google")
+    public Map<String,Object> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
+        log.info("Google login request received");
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            TokenResponse tokenResponse = googleOAuthService.loginWithGoogle(
+                    request.getCredential(),
+                    request.getPlatform(),
+                    request.getDeviceToken(),
+                    request.getVersionApp()
+            );
+
+            result.put("status", HttpStatus.OK.value());
+            result.put("message", "Đăng nhập Google thành công");
+            result.put("data", tokenResponse);
+        } catch (Exception e) {
+            log.error("Google login error: {}", e.getMessage());
+            result.put("status", HttpStatus.UNAUTHORIZED.value());
+            result.put("message", "Lỗi đăng nhập: " + e.getMessage());
+            result.put("data", null);
+        }
+        return result;
     }
 
 

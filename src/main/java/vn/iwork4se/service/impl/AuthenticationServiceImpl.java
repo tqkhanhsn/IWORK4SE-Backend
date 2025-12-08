@@ -55,7 +55,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             log.error("errorMessage: {}", e.getMessage());
             throw new AccessDeniedException(e.getMessage());
         }
-        User user = userRepository.findByUserName(request.getUsername());
+        User user = userRepository.findByEmailOrUserName(request.getUsername());
         
         // Kiểm tra trạng thái user trước khi cho phép đăng nhập
         if (user.getUserStatus() == vn.iwork4se.common.UserStatus.BANNED) {

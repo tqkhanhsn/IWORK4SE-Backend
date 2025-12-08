@@ -78,5 +78,8 @@ zgemini:
   api:
     key: "${GEMINI_API_KEY}"
     model: gemini-2.5-flash
+google:
+  oauth:
+    client-id: 1051995011454-pke3gqjcskskrbgt8okfs35td8i9fqdl.apps.googleusercontent.com
 app:
   reset-password-url: http://localhost:3000/reset-password

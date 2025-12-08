@@ -8,6 +8,12 @@ import vn.iwork4se.repository.UserRepository;
 @Service
 public record UserServiceDetail(UserRepository userRepository) {
     public UserDetailsService UserServiceDetail() {
-        return userRepository::findByUserName;
+        return identifier -> {
+            var user = userRepository.findByUserName(identifier);
+            if (user != null) {
+                return user;
+            }
+            return userRepository.findByEmail(identifier);
+        };
     }
 }

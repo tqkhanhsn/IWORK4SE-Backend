@@ -30,5 +30,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     // Find banned users whose ban has expired (unbannedDate <= today)
     @Query("SELECT u FROM User u WHERE u.userStatus = :bannedStatus AND u.unbannedDate IS NOT NULL AND u.unbannedDate <= :today")
     List<User> findBannedUsersWithExpiredBan(@Param("today") LocalDate today, @Param("bannedStatus") UserStatus bannedStatus);
+
+    @Query("SELECT u FROM User u WHERE u.email = :identifier OR u.userName = :identifier")
+    User findByEmailOrUserName(@Param("identifier") String identifier);
 }
 
