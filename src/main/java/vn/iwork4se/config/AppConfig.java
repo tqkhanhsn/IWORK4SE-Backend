@@ -39,6 +39,7 @@ public class AppConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOrigins(List.of("http://localhost:3000",
+                            "http://13.212.17.217:8080",
                             "http://127.0.0.1:5500",
                             "http://localhost:5500"));
 
