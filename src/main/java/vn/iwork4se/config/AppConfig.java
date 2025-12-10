@@ -60,6 +60,9 @@ public class AppConfig {
                         .requestMatchers("/job-category/all").permitAll()
                         .requestMatchers("/job-post/active").permitAll()
                         .requestMatchers("/ws-message/**").permitAll()
+                        .requestMatchers("/employer/companies").permitAll()
+                        .requestMatchers("/employer/company-detail").permitAll()
+                        .requestMatchers("/job-post/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/job-post/**").permitAll()
 
 
