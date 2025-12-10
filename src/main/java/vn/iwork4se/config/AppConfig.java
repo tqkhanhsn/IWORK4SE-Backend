@@ -62,8 +62,9 @@ public class AppConfig {
                         .requestMatchers("/ws-message/**").permitAll()
                         .requestMatchers("/employer/companies").permitAll()
                         .requestMatchers("/employer/company-detail").permitAll()
-                        .requestMatchers("/job-post/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/job-post/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/employer/**").permitAll()
+
 
 
 //                        .requestMatchers("/**").permitAll()
