@@ -50,7 +50,7 @@ spring:
     fromEmail: 21096301.khanh@student.iuh.edu.vn
     templateId: d-73075e7fe7bb4d88ab63489d0b92d751
     resetPwdTemplateId: d-d3597ecccd4d4267b792b7cc097bef14
-    verificationLink: http://13.212.17.217:8080/user/confirm-email
+    verificationLink: https://api.iwork4se.io.vn/user/confirm-email
 # application-dev.yml
 springdoc:
   api-docs:
@@ -82,4 +82,4 @@ google:
   oauth:
     client-id: 1051995011454-pke3gqjcskskrbgt8okfs35td8i9fqdl.apps.googleusercontent.com
 app:
-  reset-password-url: http://13.212.17.217:3000/reset-password
+  reset-password-url: https://iwork4se.io.vn/reset-password
