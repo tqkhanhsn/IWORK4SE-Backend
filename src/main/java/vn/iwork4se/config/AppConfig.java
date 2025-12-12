@@ -41,7 +41,9 @@ public class AppConfig {
                     corsConfig.setAllowedOrigins(List.of("http://localhost:3000",
                             "http://13.212.17.217:8080",
                             "http://127.0.0.1:5500",
-                            "http://localhost:5500"));
+                            "http://localhost:5500",
+                            "https://iwork4se.io.vn",
+                            "https://www.iwork4se.io.vn"));
 
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));
